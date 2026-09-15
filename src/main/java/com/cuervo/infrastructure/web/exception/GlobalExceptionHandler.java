@@ -80,13 +80,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ex.getMessage());
     }
-
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDataIntegrityViolation(
             DataIntegrityViolationException exception) {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body("Email or identification number already exists");
+                .body("Database integrity constraint violation");
     }
 }
