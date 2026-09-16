@@ -359,6 +359,22 @@ Ejecutar:
 ```powershell
 mvnw.cmd spring-boot:run
 ```
+## Estrategia de versionamiento con Git
+
+El proyecto utiliza Git y GitHub para el control de versiones.
+
+Se mantiene `main` como rama estable y se utilizan ramas `feature/...`
+para desarrollar cambios específicos antes de integrarlos nuevamente
+a la rama principal.
+
+Ejemplo utilizado durante el desarrollo:
+
+- `main`: versión estable del proyecto.
+- `feature/transaction-validation`: validación para impedir que las
+  transferencias sean procesadas mediante el flujo de depósitos y retiros.
+
+Los cambios fueron probados antes de ser integrados a `main`.
+
 
 ## Autor
 
