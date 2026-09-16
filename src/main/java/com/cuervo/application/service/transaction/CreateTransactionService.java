@@ -3,6 +3,7 @@ package com.cuervo.application.service.transaction;
 import com.cuervo.application.port.in.transaction.CreateTransactionUseCase;
 import com.cuervo.domain.enums.TransactionType;
 import com.cuervo.domain.exception.EntityNotFoundException;
+import com.cuervo.domain.exception.InvalidTransferException;
 import com.cuervo.domain.model.Account;
 import com.cuervo.domain.model.Transaction;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
@@ -30,6 +31,12 @@ public class CreateTransactionService implements CreateTransactionUseCase {
                 .findById(transaction.getAccountId())
                 .orElseThrow(() ->
                         new EntityNotFoundException("Account not found"));
+
+        if (transaction.getTransactionType() == TransactionType.TRANSFER) {
+            throw new InvalidTransferException(
+                    "Transfers must use the transfer endpoint"
+            );
+        }
 
         if (transaction.getTransactionType() == TransactionType.DEPOSIT) {
 

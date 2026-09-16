@@ -4,6 +4,7 @@ import com.cuervo.domain.enums.AccountType;
 import com.cuervo.domain.enums.MovementType;
 import com.cuervo.domain.enums.TransactionType;
 import com.cuervo.domain.exception.InsufficientBalanceException;
+import com.cuervo.domain.exception.InvalidTransferException;
 import com.cuervo.domain.model.Account;
 import com.cuervo.domain.model.Transaction;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
@@ -165,6 +166,50 @@ class CreateTransactionServiceTest {
                 new BigDecimal("10000"),
                 account.getBalance()
         );
+
+        verify(transactionRepositoryPort, never())
+                .save(any(Transaction.class));
+    }
+
+    @Test
+    void shouldRejectTransferTransaction() {
+
+        TransactionRepositoryPort transactionRepositoryPort =
+                mock(TransactionRepositoryPort.class);
+
+        AccountRepositoryPort accountRepositoryPort =
+                mock(AccountRepositoryPort.class);
+
+        CreateTransactionService service =
+                new CreateTransactionService(
+                        transactionRepositoryPort,
+                        accountRepositoryPort
+                );
+
+        Account account = new Account(
+                AccountType.SAVINGS,
+                "5312345678",
+                1L
+        );
+
+        Transaction transaction = new Transaction(
+                TransactionType.TRANSFER,
+                MovementType.DEBIT,
+                new BigDecimal("20000"),
+                1L,
+                null
+        );
+
+        when(accountRepositoryPort.findById(1L))
+                .thenReturn(Optional.of(account));
+
+        assertThrows(
+                InvalidTransferException.class,
+                () -> service.execute(transaction)
+        );
+
+        verify(accountRepositoryPort, never())
+                .save(any(Account.class));
 
         verify(transactionRepositoryPort, never())
                 .save(any(Transaction.class));
