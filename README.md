@@ -1,10 +1,12 @@
-# Prueba Técnica - API de Productos Financieros
+# Prueba Técnica - Productos Financieros
 
-API REST desarrollada con Java y Spring Boot para la administración de clientes, productos financieros y transacciones.
+Aplicación desarrollada como prueba técnica para la gestión de clientes, cuentas y transacciones financieras.
 
-El proyecto implementa una arquitectura hexagonal con separación entre dominio, casos de uso e infraestructura.
+El backend fue construido con Java y Spring Boot utilizando arquitectura hexagonal. Para la persistencia se utiliza PostgreSQL y se agregó un frontend sencillo en React para probar las principales operaciones desde una interfaz gráfica.
 
-## Tecnologías utilizadas
+## Tecnologías
+
+### Backend
 
 - Java 17
 - Spring Boot
@@ -13,24 +15,35 @@ El proyecto implementa una arquitectura hexagonal con separación entre dominio,
 - Hibernate
 - PostgreSQL
 - Maven
-- Docker
-- Docker Compose
 - JUnit
 - Mockito
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- CSS
+
+### Herramientas
+
+- Docker
+- Docker Compose
 - Postman
-- Git / GitHub
+- Git
+- GitHub
 
 ## Arquitectura
 
-El proyecto utiliza Arquitectura Hexagonal (Ports and Adapters).
+El backend utiliza arquitectura hexagonal para separar la lógica de negocio de las tecnologías externas.
 
-La aplicación está dividida principalmente en:
+La estructura principal se divide en tres partes:
 
 ### Domain
 
-Contiene la lógica y las reglas principales del negocio.
+Contiene las entidades y reglas principales del negocio.
 
-Ejemplos:
+Entre ellas:
 
 - Client
 - Account
@@ -38,23 +51,24 @@ Ejemplos:
 - Enums
 - Excepciones de dominio
 
+Esta capa no depende directamente de controladores, bases de datos o frameworks.
+
 ### Application
 
-Contiene los casos de uso y servicios de la aplicación.
+Contiene los casos de uso de la aplicación.
 
-Los puertos de entrada representan las operaciones que puede realizar la aplicación.
-
-Ejemplos:
+Algunos de los casos de uso implementados son:
 
 - CreateClientUseCase
+- UpdateClientUseCase
+- DeleteClientUseCase
 - CreateAccountUseCase
+- GetAccountsByClientUseCase
 - CreateTransactionUseCase
 - TransferMoneyUseCase
 - CancelAccountUseCase
 
-Los puertos de salida definen las operaciones que la aplicación necesita de sistemas externos.
-
-Ejemplos:
+También se encuentran los puertos utilizados para comunicarse con infraestructura, por ejemplo:
 
 - ClientRepositoryPort
 - AccountRepositoryPort
@@ -63,174 +77,225 @@ Ejemplos:
 
 ### Infrastructure
 
-Contiene los adaptadores que permiten comunicar la aplicación con tecnologías externas.
+Contiene las implementaciones relacionadas con tecnologías externas.
 
-Incluye:
+Aquí se encuentran:
 
 - Controladores REST
 - DTOs
 - Mappers
-- Persistencia JPA
+- Entidades JPA
 - Repositorios Spring Data
+- Adaptadores de persistencia
 - Configuración de Beans
+- Configuración de CORS
 - Manejo global de excepciones
 
 ## Funcionalidades
 
 ### Clientes
 
-- Crear cliente.
-- Consultar cliente.
-- Actualizar cliente.
-- Eliminar cliente.
-- Validar mayoría de edad.
-- Evitar eliminar clientes con productos financieros asociados.
-- Validar información de entrada.
-- Consultar resumen de clientes y cuentas.
+Se pueden realizar las siguientes operaciones:
 
-### Cuentas
+- Crear clientes.
+- Consultar clientes.
+- Actualizar información.
+- Eliminar clientes.
+- Consultar un resumen de clientes y cuentas.
+- Consultar las cuentas asociadas a un cliente.
 
-La aplicación maneja:
+Al crear un cliente se valida que sea mayor de edad.
 
-- Cuenta de ahorros (`SAVINGS`).
-- Cuenta corriente (`CHECKING`).
+También se evita eliminar un cliente cuando tiene cuentas asociadas.
 
-Las cuentas poseen:
+Se realizan validaciones básicas como:
 
-- Número único de 10 dígitos.
-- Prefijo `53` para cuentas de ahorro.
-- Prefijo `33` para cuentas corrientes.
+- Nombre y apellido con mínimo 2 caracteres.
+- Correo electrónico válido.
+- Tipo y número de identificación obligatorios.
+- Fecha de nacimiento obligatoria.
+
+## Cuentas
+
+La aplicación maneja dos tipos de cuenta:
+
+- `SAVINGS`: cuenta de ahorros.
+- `CHECKING`: cuenta corriente.
+
+Cada cuenta contiene:
+
+- Número de cuenta.
+- Tipo.
 - Saldo.
 - Saldo disponible.
 - Estado.
-- Fecha de creación y actualización.
+- Fecha de creación.
+- Fecha de actualización.
 - Cliente propietario.
 
-Estados disponibles:
+El número de cuenta se genera automáticamente con 10 dígitos.
+
+Los prefijos utilizados son:
+
+- `53` para cuentas de ahorro.
+- `33` para cuentas corrientes.
+
+Los estados disponibles son:
 
 - `ACTIVE`
 - `INACTIVE`
 - `CANCELLED`
 
+Las cuentas de ahorro se crean activas por defecto.
+
 Una cuenta solamente puede cancelarse cuando su saldo es cero.
 
-### Transacciones
+Las operaciones financieras solo pueden realizarse sobre cuentas que se encuentren activas.
 
-La aplicación permite:
+## Transacciones
+
+La aplicación permite realizar:
 
 - Depósitos.
 - Retiros.
 - Transferencias.
 
-Tipos:
+Los tipos de transacción utilizados son:
 
 - `DEPOSIT`
 - `WITHDRAWAL`
 - `TRANSFER`
 
-Movimientos:
+Los movimientos pueden ser:
 
 - `CREDIT`
 - `DEBIT`
 
-Las transferencias generan dos movimientos relacionados mediante un mismo `transferId`:
+Cuando se realiza una transferencia se generan dos movimientos:
 
-- Débito en la cuenta origen.
-- Crédito en la cuenta destino.
+- Un débito en la cuenta origen.
+- Un crédito en la cuenta destino.
 
-Los depósitos y retiros no necesitan `transferId`.
+Ambos movimientos quedan relacionados mediante el mismo `transferId`.
+
+También se puede consultar el historial de movimientos de una cuenta.
+
+## Frontend
+
+El proyecto incluye una interfaz sencilla desarrollada con React y Vite.
+
+Desde el frontend se pueden realizar las principales operaciones del sistema:
+
+- Crear clientes.
+- Consultar clientes.
+- Editar clientes.
+- Eliminar clientes.
+- Consultar las cuentas de un cliente.
+- Crear cuentas.
+- Consultar cuentas.
+- Cambiar el estado de una cuenta.
+- Cancelar cuentas.
+- Realizar depósitos.
+- Realizar retiros.
+- Realizar transferencias.
+- Consultar el historial de movimientos.
+
+El frontend se encuentra en:
+
+```text
+frontend/
+```
 
 ## Principios SOLID
 
-El proyecto aplica principios SOLID.
+Durante el desarrollo se buscó mantener responsabilidades separadas entre las diferentes capas.
 
 ### Single Responsibility Principle
 
-Cada clase posee una responsabilidad específica.
+Cada clase tiene una responsabilidad específica.
 
-Por ejemplo, los controladores reciben solicitudes HTTP, los servicios ejecutan casos de uso y los adaptadores de persistencia se encargan del acceso a datos.
+Por ejemplo:
+
+- Los controladores reciben las solicitudes HTTP.
+- Los servicios ejecutan los casos de uso.
+- Los adaptadores se encargan de la persistencia.
+- Los repositorios abstraen el acceso a los datos.
 
 ### Open/Closed Principle
 
-La utilización de interfaces y puertos permite agregar nuevas implementaciones sin modificar directamente la lógica del dominio.
+El uso de interfaces permite agregar nuevas implementaciones sin modificar directamente las reglas del dominio.
 
 ### Liskov Substitution Principle
 
-Las implementaciones de los puertos pueden sustituirse siempre que respeten el contrato definido por sus interfaces.
+Las implementaciones de los puertos pueden sustituirse mientras respeten el contrato definido por la interfaz.
 
 ### Interface Segregation Principle
 
-Los casos de uso se encuentran separados en interfaces específicas según cada operación.
+Los casos de uso se encuentran separados según cada operación.
 
 ### Dependency Inversion Principle
 
-La lógica de aplicación depende de abstracciones como:
+Los servicios dependen de abstracciones como:
 
 - AccountRepositoryPort
 - ClientRepositoryPort
 - TransactionRepositoryPort
 
-y no directamente de Spring Data JPA.
+De esta forma la lógica de negocio no depende directamente de Spring Data JPA.
 
-## Patrones de diseño
+## Patrones utilizados
 
-Se utilizan diferentes patrones y conceptos de diseño:
+### Repository
 
-### Repository Pattern
+Se utiliza para abstraer el acceso a la base de datos.
 
-Los puertos de repositorio abstraen el acceso a PostgreSQL.
+### Adapter
 
-### Adapter Pattern
-
-Los adaptadores de persistencia implementan los puertos definidos por la aplicación.
+Los adaptadores implementan los puertos definidos por el dominio y la aplicación.
 
 ### Dependency Injection
 
-Spring se encarga de proporcionar las dependencias necesarias a los componentes.
+Spring administra las dependencias necesarias para ejecutar los casos de uso.
 
-### DTO Pattern
+### DTO
 
-Los DTOs permiten separar los objetos utilizados por la API de los objetos internos del dominio.
+Los DTOs separan la información recibida por la API de los objetos internos del dominio.
 
-### Mapper Pattern
+### Mapper
 
-Los mappers transforman DTOs, entidades de persistencia y objetos de dominio.
+Los mappers se utilizan para convertir entre entidades JPA, objetos de dominio y DTOs.
 
-## ACID y transacciones
+## ACID y manejo de transacciones
 
-Las operaciones que modifican información financiera se ejecutan utilizando transacciones de base de datos.
+Las operaciones financieras que requieren varios cambios en la base de datos utilizan transacciones.
 
-Spring utiliza `@Transactional` para garantizar que operaciones relacionadas se ejecuten de forma atómica.
+En el caso de una transferencia se realizan varias operaciones:
 
-Por ejemplo, durante una transferencia:
+1. Se busca la cuenta origen.
+2. Se busca la cuenta destino.
+3. Se valida la operación.
+4. Se descuenta el valor de la cuenta origen.
+5. Se acredita el valor en la cuenta destino.
+6. Se guardan los nuevos saldos.
+7. Se registran los movimientos correspondientes.
 
-1. Se valida la cuenta origen.
-2. Se valida la cuenta destino.
-3. Se descuenta el dinero de la cuenta origen.
-4. Se acredita el dinero en la cuenta destino.
-5. Se actualizan ambas cuentas.
-6. Se generan los movimientos débito y crédito.
+El servicio de transferencia utiliza `@Transactional`.
 
-Si ocurre una excepción durante la operación, la transacción puede realizar rollback evitando que la información financiera quede parcialmente actualizada.
+Si ocurre un error durante el proceso, Spring puede realizar rollback evitando guardar una transferencia incompleta.
 
-PostgreSQL proporciona las propiedades ACID:
-
-- Atomicidad.
-- Consistencia.
-- Aislamiento.
-- Durabilidad.
+PostgreSQL proporciona las propiedades ACID necesarias para mantener la consistencia de la información.
 
 ## Base de datos
 
-La aplicación utiliza PostgreSQL.
+Se utiliza PostgreSQL.
 
-Las tablas principales son:
+Las principales tablas son:
 
 - `clients`
 - `accounts`
 - `transactions`
 
-Los scripts SQL se encuentran en:
+También se incluyen scripts SQL dentro del proyecto:
 
 ```text
 database/
@@ -238,35 +303,34 @@ database/
 └── dml.sql
 ```
 
-`ddl.sql` contiene la definición de las estructuras de base de datos.
+`ddl.sql` contiene la creación de las estructuras principales.
 
-`dml.sql` contiene ejemplos de manipulación y consulta de datos.
+`dml.sql` contiene ejemplos de inserción, modificación y consulta de información.
 
-## Docker
-
-La aplicación y PostgreSQL pueden ejecutarse utilizando Docker Compose.
-
-Construir e iniciar los contenedores:
-
-```bash
-docker compose up --build
-```
-
-Detenerlos:
-
-```bash
-docker compose down
-```
-
-La API estará disponible en:
+## Estructura general
 
 ```text
-http://localhost:8080
+PruebaTecnica/
+├── database/
+│   ├── ddl.sql
+│   └── dml.sql
+├── frontend/
+├── src/
+│   ├── main/
+│   │   └── java/
+│   │       └── com/cuervo/
+│   │           ├── application/
+│   │           ├── domain/
+│   │           ├── infrastructure/
+│   │           └── pruebatecnica/
+│   └── test/
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
+└── README.md
 ```
 
-PostgreSQL se ejecuta dentro de Docker en el puerto `5432` y se expone en el host mediante el puerto `5433`.
-
-## Endpoints principales
+## Endpoints
 
 ### Clientes
 
@@ -283,11 +347,12 @@ GET    /api/clients/summary
 ```text
 POST   /api/accounts
 GET    /api/accounts/{id}
+GET    /api/accounts/client/{clientId}
 PATCH  /api/accounts/{id}/status
 DELETE /api/accounts/{id}
 ```
 
-Ejemplo para cambiar el estado:
+Ejemplo para cambiar el estado de una cuenta:
 
 ```text
 PATCH /api/accounts/1/status?status=INACTIVE
@@ -311,6 +376,16 @@ POST /api/transactions/transfer
 }
 ```
 
+## Ejemplo de retiro
+
+```json
+{
+  "accountId": 1,
+  "transactionType": "WITHDRAWAL",
+  "amount": 20000
+}
+```
+
 ## Ejemplo de transferencia
 
 ```json
@@ -323,9 +398,9 @@ POST /api/transactions/transfer
 
 ## Pruebas
 
-El proyecto contiene pruebas unitarias y pruebas de controladores utilizando JUnit y Mockito.
+Se realizaron pruebas con JUnit y Mockito tanto para servicios como para controladores.
 
-Entre los componentes probados se encuentran:
+Entre las clases probadas se encuentran:
 
 - CreateClientService
 - DeleteClientService
@@ -336,11 +411,13 @@ Entre los componentes probados se encuentran:
 - AccountController
 - TransactionController
 
-Para ejecutar las pruebas:
+Para ejecutar todas las pruebas:
 
 ```bash
-./mvnw test
+mvn test
 ```
+
+También se pueden ejecutar utilizando Maven Wrapper.
 
 En Windows:
 
@@ -348,33 +425,116 @@ En Windows:
 mvnw.cmd test
 ```
 
-## Ejecución local
+## Ejecución local del backend
 
-Para ejecutar el proyecto sin Docker se requiere PostgreSQL disponible localmente.
+Para ejecutar el backend localmente es necesario tener PostgreSQL disponible.
 
-La aplicación utiliza variables de entorno cuando están disponibles y valores locales como respaldo.
+La configuración se encuentra en:
+
+```text
+src/main/resources/application.properties
+```
 
 Ejecutar:
 
 ```powershell
+mvn spring-boot:run
+```
+
+o:
+
+```powershell
 mvnw.cmd spring-boot:run
 ```
-## Estrategia de versionamiento con Git
 
-El proyecto utiliza Git y GitHub para el control de versiones.
+La API quedará disponible en:
 
-Se mantiene `main` como rama estable y se utilizan ramas `feature/...`
-para desarrollar cambios específicos antes de integrarlos nuevamente
-a la rama principal.
+```text
+http://localhost:8080
+```
 
-Ejemplo utilizado durante el desarrollo:
+## Ejecución del frontend
 
-- `main`: versión estable del proyecto.
-- `feature/transaction-validation`: validación para impedir que las
-  transferencias sean procesadas mediante el flujo de depósitos y retiros.
+Entrar a la carpeta:
 
-Los cambios fueron probados antes de ser integrados a `main`.
+```powershell
+cd frontend
+```
 
+Instalar las dependencias:
+
+```powershell
+npm install
+```
+
+Ejecutar el proyecto:
+
+```powershell
+npm run dev
+```
+
+Para generar el build:
+
+```powershell
+npm run build
+```
+
+Vite normalmente inicia el frontend en:
+
+```text
+http://localhost:5173
+```
+
+Si ese puerto está ocupado puede utilizar otro puerto disponible.
+
+## Docker
+
+El proyecto incluye:
+
+```text
+Dockerfile
+docker-compose.yml
+```
+
+Para construir e iniciar los contenedores:
+
+```bash
+docker compose up --build
+```
+
+Para detenerlos:
+
+```bash
+docker compose down
+```
+
+La API se expone en:
+
+```text
+http://localhost:8080
+```
+
+PostgreSQL se ejecuta dentro de Docker en el puerto `5432` y se expone al equipo mediante el puerto configurado en `docker-compose.yml`.
+
+## Git y GitHub
+
+El proyecto utiliza Git para el control de versiones.
+
+Se mantiene `main` como rama principal y se utilizaron ramas `feature/...` para trabajar cambios antes de integrarlos.
+
+Un ejemplo utilizado durante el desarrollo fue:
+
+```text
+feature/transaction-validation
+```
+
+En esta rama se agregó la validación para impedir que una transferencia fuera procesada utilizando el endpoint normal de depósitos y retiros.
+
+Después de probar los cambios fueron integrados nuevamente a `main`.
+
+## Servicios cloud
+
+Para esta prueba no se integraron servicios cloud. La aplicación está preparada para ejecutarse localmente o mediante Docker.
 
 ## Autor
 

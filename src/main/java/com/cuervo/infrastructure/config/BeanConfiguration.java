@@ -20,26 +20,34 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanConfiguration {
 
+
     @Bean
     public CreateClientUseCase createClientUseCase(
             ClientRepositoryPort clientRepositoryPort) {
 
-        return new CreateClientService(clientRepositoryPort);
+        return new CreateClientService(
+                clientRepositoryPort
+        );
     }
 
     @Bean
     public GetClientUseCase getClientUseCase(
             ClientRepositoryPort clientRepositoryPort) {
 
-        return new GetClientService(clientRepositoryPort);
+        return new GetClientService(
+                clientRepositoryPort
+        );
     }
 
     @Bean
     public UpdateClientUseCase updateClientUseCase(
             ClientRepositoryPort clientRepositoryPort) {
 
-        return new UpdateClientService(clientRepositoryPort);
+        return new UpdateClientService(
+                clientRepositoryPort
+        );
     }
+
     @Bean
     public DeleteClientUseCase deleteClientUseCase(
             ClientRepositoryPort clientRepositoryPort,
@@ -47,6 +55,68 @@ public class BeanConfiguration {
 
         return new DeleteClientService(
                 clientRepositoryPort,
+                accountRepositoryPort
+        );
+    }
+
+    @Bean
+    public GetClientSummaryUseCase getClientSummaryUseCase(
+            ClientRepositoryPort clientRepositoryPort,
+            AccountRepositoryPort accountRepositoryPort) {
+
+        return new GetClientSummaryService(
+                clientRepositoryPort,
+                accountRepositoryPort
+        );
+    }
+
+
+
+    @Bean
+    public CreateAccountUseCase createAccountUseCase(
+            AccountRepositoryPort accountRepositoryPort,
+            ClientRepositoryPort clientRepositoryPort,
+            AccountNumberGeneratorPort accountNumberGeneratorPort) {
+
+        return new CreateAccountService(
+                accountRepositoryPort,
+                clientRepositoryPort,
+                accountNumberGeneratorPort
+        );
+    }
+
+    @Bean
+    public GetAccountUseCase getAccountUseCase(
+            AccountRepositoryPort accountRepositoryPort) {
+
+        return new GetAccountService(
+                accountRepositoryPort
+        );
+    }
+
+    @Bean
+    public GetAccountsByClientUseCase getAccountsByClientUseCase(
+            AccountRepositoryPort accountRepositoryPort) {
+
+        return new GetAccountsByClientService(
+                accountRepositoryPort
+        );
+    }
+
+    @Bean
+    public ChangeAccountStatusUseCase changeAccountStatusUseCase(
+            AccountRepositoryPort accountRepositoryPort) {
+
+        return new ChangeAccountStatusService(
+                accountRepositoryPort
+        );
+    }
+
+    @Bean
+    public CancelAccountUseCase cancelAccountUseCase(
+            AccountRepositoryPort accountRepositoryPort) {
+
+        return new CancelAccountService(
                 accountRepositoryPort
         );
     }
@@ -79,56 +149,6 @@ public class BeanConfiguration {
         return new TransferMoneyService(
                 accountRepositoryPort,
                 transactionRepositoryPort
-        );
-    }
-
-    @Bean
-    public CreateAccountUseCase createAccountUseCase(
-            AccountRepositoryPort accountRepositoryPort,
-            ClientRepositoryPort clientRepositoryPort,
-            AccountNumberGeneratorPort accountNumberGeneratorPort) {
-
-        return new CreateAccountService(
-                accountRepositoryPort,
-                clientRepositoryPort,
-                accountNumberGeneratorPort
-        );
-    }
-
-    @Bean
-    public GetAccountUseCase getAccountUseCase(
-            AccountRepositoryPort accountRepositoryPort) {
-
-        return new GetAccountService(accountRepositoryPort);
-    }
-
-    @Bean
-    public ChangeAccountStatusUseCase changeAccountStatusUseCase(
-            AccountRepositoryPort accountRepositoryPort) {
-
-        return new ChangeAccountStatusService(
-                accountRepositoryPort
-        );
-    }
-
-    @Bean
-    public CancelAccountUseCase cancelAccountUseCase(
-            AccountRepositoryPort accountRepositoryPort) {
-
-        return new CancelAccountService(
-                accountRepositoryPort
-        );
-    }
-
- 
-    @Bean
-    public GetClientSummaryUseCase getClientSummaryUseCase(
-            ClientRepositoryPort clientRepositoryPort,
-            AccountRepositoryPort accountRepositoryPort) {
-
-        return new GetClientSummaryService(
-                clientRepositoryPort,
-                accountRepositoryPort
         );
     }
 }
