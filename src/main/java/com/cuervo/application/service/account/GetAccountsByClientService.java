@@ -1,6 +1,7 @@
 package com.cuervo.application.service.account;
 
 import com.cuervo.application.port.in.account.GetAccountsByClientUseCase;
+import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.model.Account;
 import com.cuervo.domain.model.Client;
@@ -12,29 +13,40 @@ import java.util.List;
 public class GetAccountsByClientService
         implements GetAccountsByClientUseCase {
 
-    private final AccountRepositoryPort accountRepositoryPort;
     private final ClientRepositoryPort clientRepositoryPort;
+    private final AccountRepositoryPort accountRepositoryPort;
 
     public GetAccountsByClientService(
-            AccountRepositoryPort accountRepositoryPort,
-            ClientRepositoryPort clientRepositoryPort) {
+            ClientRepositoryPort clientRepositoryPort,
+            AccountRepositoryPort accountRepositoryPort) {
 
-        this.accountRepositoryPort = accountRepositoryPort;
-        this.clientRepositoryPort = clientRepositoryPort;
+        this.clientRepositoryPort =
+                clientRepositoryPort;
+
+        this.accountRepositoryPort =
+                accountRepositoryPort;
     }
 
     @Override
-    public List<Account> getByIdentificationNumber(
+    public List<Account> getByIdentification(
+            IdentificationType identificationType,
             String identificationNumber) {
 
-        Client client = clientRepositoryPort
-                .findByIdentificationNumber(identificationNumber)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Client not found"
-                        ));
+        Client client =
+                clientRepositoryPort
+                        .findByIdentificationTypeAndIdentificationNumber(
+                                identificationType,
+                                identificationNumber
+                        )
+                        .orElseThrow(
+                                () -> new EntityNotFoundException(
+                                        "Cliente no encontrado"
+                                )
+                        );
 
         return accountRepositoryPort
-                .findByClientId(client.getId());
+                .findByClientId(
+                        client.getId()
+                );
     }
 }

@@ -1,6 +1,7 @@
 package com.cuervo.infrastructure.web.controller;
 
 import com.cuervo.application.port.in.client.*;
+import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.model.Client;
 import com.cuervo.infrastructure.web.dtoclient.ClientResponse;
 import com.cuervo.infrastructure.web.dtoclient.CreateClientRequest;
@@ -127,12 +128,18 @@ class ClientControllerTest {
         ClientResponse response =
                 mock(ClientResponse.class);
 
+        IdentificationType identificationType =
+                IdentificationType.CC;
+
         String identificationNumber =
                 "1075000000";
 
-        when(getClientUseCase.execute(
-                identificationNumber
-        )).thenReturn(
+        when(
+                getClientUseCase.execute(
+                        identificationType,
+                        identificationNumber
+                )
+        ).thenReturn(
                 Optional.of(client)
         );
 
@@ -141,6 +148,7 @@ class ClientControllerTest {
 
         ResponseEntity<ClientResponse> result =
                 controller.getClient(
+                        identificationType,
                         identificationNumber
                 );
 
@@ -156,6 +164,7 @@ class ClientControllerTest {
 
         verify(getClientUseCase)
                 .execute(
+                        identificationType,
                         identificationNumber
                 );
 

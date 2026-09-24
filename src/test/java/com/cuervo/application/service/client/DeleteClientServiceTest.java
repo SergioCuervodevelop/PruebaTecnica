@@ -1,5 +1,6 @@
 package com.cuervo.application.service.client;
 
+import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.exception.InvalidClientException;
 import com.cuervo.domain.model.Client;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
@@ -28,28 +29,48 @@ class DeleteClientServiceTest {
                         accountRepositoryPort
                 );
 
-        Client client = mock(Client.class);
+        Client client =
+                mock(Client.class);
 
-        String identificationNumber = "1075234567";
+        IdentificationType identificationType =
+                IdentificationType.CC;
 
-        when(clientRepositoryPort
-                .findByIdentificationNumber(identificationNumber))
-                .thenReturn(Optional.of(client));
+        String identificationNumber =
+                "1075234567";
+
+        when(
+                clientRepositoryPort
+                        .findByIdentificationTypeAndIdentificationNumber(
+                                identificationType,
+                                identificationNumber
+                        )
+        ).thenReturn(
+                Optional.of(client)
+        );
 
         when(client.getId())
                 .thenReturn(1L);
 
-        when(accountRepositoryPort
-                .existsByClientId(1L))
-                .thenReturn(true);
+        when(
+                accountRepositoryPort
+                        .existsByClientId(1L)
+        ).thenReturn(true);
 
         assertThrows(
                 InvalidClientException.class,
-                () -> service.execute(identificationNumber)
+                () -> service.execute(
+                        identificationType,
+                        identificationNumber
+                )
         );
 
-        verify(clientRepositoryPort, never())
-                .deleteByIdentificationNumber(identificationNumber);
+        verify(
+                clientRepositoryPort,
+                never()
+        ).deleteByIdentificationTypeAndIdentificationNumber(
+                any(IdentificationType.class),
+                anyString()
+        );
     }
 
     @Test
@@ -67,24 +88,43 @@ class DeleteClientServiceTest {
                         accountRepositoryPort
                 );
 
-        Client client = mock(Client.class);
+        Client client =
+                mock(Client.class);
 
-        String identificationNumber = "1075234567";
+        IdentificationType identificationType =
+                IdentificationType.CC;
 
-        when(clientRepositoryPort
-                .findByIdentificationNumber(identificationNumber))
-                .thenReturn(Optional.of(client));
+        String identificationNumber =
+                "1075234567";
+
+        when(
+                clientRepositoryPort
+                        .findByIdentificationTypeAndIdentificationNumber(
+                                identificationType,
+                                identificationNumber
+                        )
+        ).thenReturn(
+                Optional.of(client)
+        );
 
         when(client.getId())
                 .thenReturn(1L);
 
-        when(accountRepositoryPort
-                .existsByClientId(1L))
-                .thenReturn(false);
+        when(
+                accountRepositoryPort
+                        .existsByClientId(1L)
+        ).thenReturn(false);
 
-        service.execute(identificationNumber);
+        service.execute(
+                identificationType,
+                identificationNumber
+        );
 
-        verify(clientRepositoryPort)
-                .deleteByIdentificationNumber(identificationNumber);
+        verify(
+                clientRepositoryPort
+        ).deleteByIdentificationTypeAndIdentificationNumber(
+                identificationType,
+                identificationNumber
+        );
     }
 }

@@ -100,7 +100,9 @@ La API utiliza identificadores de negocio en lugar de exponer los IDs técnicos 
 ### Cliente
 
 - `id`: identificador técnico interno generado por la base de datos.
-- `identificationNumber`: identificador público utilizado para consultar, actualizar y eliminar clientes.
+- `identificationType` + `identificationNumber`: identificador público compuesto utilizado para consultar, actualizar y eliminar clientes.
+
+La combinación de tipo y número de identificación es única. Esto permite que dos clientes tengan el mismo número siempre que pertenezca a tipos de documento diferentes, por ejemplo `CC + 1234567890` y `CE + 1234567890`.
 
 ### Cuenta
 
@@ -114,7 +116,7 @@ accounts.client_id      -> clients.id
 transactions.account_id -> accounts.id
 ```
 
-De esta manera, los IDs técnicos permanecen internos mientras la API trabaja con `identificationNumber` y `accountNumber`.
+De esta manera, los IDs técnicos permanecen internos mientras la API trabaja con `identificationType + identificationNumber` para clientes y `accountNumber` para cuentas.
 
 ## Funcionalidades
 
@@ -370,9 +372,9 @@ PruebaTecnica/
 
 ```text
 POST   /api/clients
-GET    /api/clients/{identificationNumber}
-PUT    /api/clients/{identificationNumber}
-DELETE /api/clients/{identificationNumber}
+GET    /api/clients/{identificationType}/{identificationNumber}
+PUT    /api/clients/{identificationType}/{identificationNumber}
+DELETE /api/clients/{identificationType}/{identificationNumber}
 GET    /api/clients/summary
 ```
 
@@ -381,9 +383,25 @@ GET    /api/clients/summary
 ```text
 POST   /api/accounts
 GET    /api/accounts/{accountNumber}
-GET    /api/accounts/client/{identificationNumber}
+GET    /api/accounts/client/{identificationType}/{identificationNumber}
 PATCH  /api/accounts/{accountNumber}/status?status=ACTIVE|INACTIVE
 DELETE /api/accounts/{accountNumber}
+```
+
+Ejemplo para crear una cuenta:
+
+```json
+{
+  "accountType": "SAVINGS",
+  "identificationType": "CC",
+  "identificationNumber": "1234567890"
+}
+```
+
+Ejemplo para consultar las cuentas de un cliente:
+
+```text
+GET /api/accounts/client/CC/1234567890
 ```
 
 Ejemplo para cambiar el estado de una cuenta:

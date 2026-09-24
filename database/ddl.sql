@@ -1,13 +1,28 @@
 CREATE TABLE clients (
                          id BIGSERIAL PRIMARY KEY,
                          identification_type VARCHAR(255) NOT NULL,
-                         identification_number VARCHAR(255) NOT NULL UNIQUE,
+                         identification_number VARCHAR(255) NOT NULL,
                          first_name VARCHAR(255) NOT NULL,
                          last_name VARCHAR(255) NOT NULL,
                          email VARCHAR(255) NOT NULL UNIQUE,
                          birth_date DATE NOT NULL,
                          created_at TIMESTAMP NOT NULL,
-                         updated_at TIMESTAMP
+                         updated_at TIMESTAMP,
+
+                         CONSTRAINT uk_clients_identification
+                             UNIQUE (
+                                     identification_type,
+                                     identification_number
+                                 ),
+
+                         CONSTRAINT chk_identification_type
+                             CHECK (
+                                 identification_type IN (
+                                                         'CC',
+                                                         'CE',
+                                                         'PA'
+                                     )
+                                 )
 );
 
 CREATE TABLE accounts (
@@ -27,11 +42,23 @@ CREATE TABLE accounts (
                                   REFERENCES clients(id),
 
                           CONSTRAINT chk_account_type
-                              CHECK (account_type IN ('SAVINGS', 'CHECKING')),
+                              CHECK (
+                                  account_type IN (
+                                                   'SAVINGS',
+                                                   'CHECKING'
+                                      )
+                                  ),
 
                           CONSTRAINT chk_account_status
-                              CHECK (status IN ('ACTIVE', 'INACTIVE', 'CANCELLED'))
+                              CHECK (
+                                  status IN (
+                                             'ACTIVE',
+                                             'INACTIVE',
+                                             'CANCELLED'
+                                      )
+                                  )
 );
+
 
 CREATE TABLE transactions (
                               id BIGSERIAL PRIMARY KEY,
@@ -48,8 +75,19 @@ CREATE TABLE transactions (
                                       REFERENCES accounts(id),
 
                               CONSTRAINT chk_transaction_type
-                                  CHECK (transaction_type IN ('DEPOSIT', 'WITHDRAWAL', 'TRANSFER')),
+                                  CHECK (
+                                      transaction_type IN (
+                                                           'DEPOSIT',
+                                                           'WITHDRAWAL',
+                                                           'TRANSFER'
+                                          )
+                                      ),
 
                               CONSTRAINT chk_movement_type
-                                  CHECK (movement_type IN ('DEBIT', 'CREDIT'))
+                                  CHECK (
+                                      movement_type IN (
+                                                        'DEBIT',
+                                                        'CREDIT'
+                                          )
+                                      )
 );

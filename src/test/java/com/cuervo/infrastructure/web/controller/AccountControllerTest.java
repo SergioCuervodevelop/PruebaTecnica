@@ -7,6 +7,7 @@ import com.cuervo.application.port.in.account.GetAccountUseCase;
 import com.cuervo.application.port.in.account.GetAccountsByClientUseCase;
 import com.cuervo.domain.enums.AccountStatus;
 import com.cuervo.domain.enums.AccountType;
+import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.model.Account;
 import com.cuervo.infrastructure.web.dtoaccount.AccountResponse;
 import com.cuervo.infrastructure.web.dtoaccount.CreateAccountRequest;
@@ -64,11 +65,15 @@ class AccountControllerTest {
         when(request.accountType())
                 .thenReturn(AccountType.SAVINGS);
 
+        when(request.identificationType())
+                .thenReturn(IdentificationType.CC);
+
         when(request.identificationNumber())
                 .thenReturn("1075000000");
 
         when(createAccountUseCase.create(
                 AccountType.SAVINGS,
+                IdentificationType.CC,
                 "1075000000"
         )).thenReturn(createdAccount);
 
@@ -91,6 +96,7 @@ class AccountControllerTest {
 
         verify(createAccountUseCase).create(
                 AccountType.SAVINGS,
+                IdentificationType.CC,
                 "1075000000"
         );
     }
@@ -273,7 +279,8 @@ class AccountControllerTest {
                 mock(AccountResponse.class);
 
         when(getAccountsByClientUseCase
-                .getByIdentificationNumber(
+                .getByIdentification(
+                        IdentificationType.CC,
                         "1075000000"
                 ))
                 .thenReturn(
@@ -293,6 +300,7 @@ class AccountControllerTest {
 
         ResponseEntity<List<AccountResponse>> result =
                 controller.getAccountsByClient(
+                        IdentificationType.CC,
                         "1075000000"
                 );
 
@@ -317,7 +325,8 @@ class AccountControllerTest {
         );
 
         verify(getAccountsByClientUseCase)
-                .getByIdentificationNumber(
+                .getByIdentification(
+                        IdentificationType.CC,
                         "1075000000"
                 );
     }

@@ -7,7 +7,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "clients")
+@Table(
+        name = "clients",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_clients_identification",
+                        columnNames = {
+                                "identification_type",
+                                "identification_number"
+                        }
+                )
+        }
+)
 public class ClientEntity {
 
     @Id
@@ -18,7 +29,7 @@ public class ClientEntity {
     @Column(name = "identification_type", nullable = false)
     private IdentificationType identificationType;
 
-    @Column(name = "identification_number", nullable = false, unique = true)
+    @Column(name = "identification_number", nullable = false)
     private String identificationNumber;
 
     @Column(name = "first_name", nullable = false)
@@ -51,7 +62,8 @@ public class ClientEntity {
         return identificationType;
     }
 
-    public void setIdentificationType(IdentificationType identificationType) {
+    public void setIdentificationType(
+            IdentificationType identificationType) {
         this.identificationType = identificationType;
     }
 
@@ -59,7 +71,8 @@ public class ClientEntity {
         return identificationNumber;
     }
 
-    public void setIdentificationNumber(String identificationNumber) {
+    public void setIdentificationNumber(
+            String identificationNumber) {
         this.identificationNumber = identificationNumber;
     }
 
@@ -71,20 +84,20 @@ public class ClientEntity {
         this.firstName = firstName;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getLastName() {
         return lastName;
     }
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public LocalDate getBirthDate() {

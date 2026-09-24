@@ -1,5 +1,5 @@
-
 -- DML - PRUEBA TÉCNICA
+
 
 -- 1. INSERTAR UN CLIENTE
 INSERT INTO clients (
@@ -29,14 +29,22 @@ SELECT *
 FROM clients;
 
 
--- 3. ACTUALIZAR UN CLIENTE
+-- 3. CONSULTAR UN CLIENTE POR SU IDENTIFICACIÓN
+SELECT *
+FROM clients
+WHERE identification_type = 'CC'
+  AND identification_number = '1234567890';
+
+
+-- 4. ACTUALIZAR UN CLIENTE
 UPDATE clients
 SET first_name = 'Sergio Andres',
     updated_at = CURRENT_TIMESTAMP
-WHERE identification_number = '1234567890';
+WHERE identification_type = 'CC'
+  AND identification_number = '1234567890';
 
 
--- 4. INSERTAR UNA CUENTA DE AHORROS
+-- 5. INSERTAR UNA CUENTA DE AHORROS
 INSERT INTO accounts (
     account_type,
     account_number,
@@ -57,16 +65,21 @@ VALUES (
            FALSE,
            CURRENT_TIMESTAMP,
            CURRENT_TIMESTAMP,
-           1
+           (
+               SELECT id
+               FROM clients
+               WHERE identification_type = 'CC'
+                 AND identification_number = '1234567890'
+           )
        );
 
 
--- 5. CONSULTAR CUENTAS
+-- 6. CONSULTAR CUENTAS
 SELECT *
 FROM accounts;
 
 
--- 6. INSERTAR UN DEPÓSITO
+-- 7. INSERTAR UN DEPÓSITO
 INSERT INTO transactions (
     transaction_type,
     movement_type,
@@ -83,26 +96,34 @@ VALUES (
            CURRENT_TIMESTAMP,
            NULL,
            NULL,
-           1
+           (
+               SELECT id
+               FROM accounts
+               WHERE account_number = '5312345678'
+           )
        );
 
 
--- 7. ACTUALIZAR SALDOS DESPUÉS DEL DEPÓSITO
+-- 8. ACTUALIZAR SALDOS DESPUÉS DEL DEPÓSITO
 UPDATE accounts
 SET balance = balance + 50000.00,
     available_balance = available_balance + 50000.00,
     updated_at = CURRENT_TIMESTAMP
-WHERE id = 1;
+WHERE account_number = '5312345678';
 
 
--- 8. CONSULTAR MOVIMIENTOS DE UNA CUENTA
-SELECT *
-FROM transactions
-WHERE account_id = 1
-ORDER BY transaction_date DESC;
+-- 9. CONSULTAR MOVIMIENTOS DE UNA CUENTA
+SELECT t.*
+FROM transactions t
+         JOIN accounts a
+              ON t.account_id = a.id
+WHERE a.account_number = '5312345678'
+ORDER BY t.transaction_date DESC;
 
 
--- 9. EJEMPLO DE DELETE
+-- 10. EJEMPLO DE DELETE
 -- Se deja comentado para evitar borrar accidentalmente datos.
+
 -- DELETE FROM clients
--- WHERE identification_number = '1234567890';
+-- WHERE identification_type = 'CC'
+--   AND identification_number = '1234567890';

@@ -100,8 +100,8 @@ public class BeanConfiguration {
             ClientRepositoryPort clientRepositoryPort) {
 
         return new GetAccountsByClientService(
-                accountRepositoryPort,
-                clientRepositoryPort
+                clientRepositoryPort,
+                accountRepositoryPort
         );
     }
 

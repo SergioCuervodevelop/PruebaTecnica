@@ -27,11 +27,14 @@ export async function createClient(client) {
   return response.json();
 }
 
-export async function getClientByIdentificationNumber(
+export async function getClientByIdentification(
+  identificationType,
   identificationNumber
 ) {
   const response = await fetch(
-    `${API_URL}/clients/${identificationNumber}`
+    `${API_URL}/clients/${encodeURIComponent(
+      identificationType
+    )}/${encodeURIComponent(identificationNumber)}`
   );
 
   if (!response.ok) {
@@ -43,11 +46,14 @@ export async function getClientByIdentificationNumber(
 }
 
 export async function updateClient(
+  identificationType,
   identificationNumber,
   client
 ) {
   const response = await fetch(
-    `${API_URL}/clients/${identificationNumber}`,
+    `${API_URL}/clients/${encodeURIComponent(
+      identificationType
+    )}/${encodeURIComponent(identificationNumber)}`,
     {
       method: "PUT",
       headers: {
@@ -65,9 +71,14 @@ export async function updateClient(
   return response.json();
 }
 
-export async function deleteClient(identificationNumber) {
+export async function deleteClient(
+  identificationType,
+  identificationNumber
+) {
   const response = await fetch(
-    `${API_URL}/clients/${identificationNumber}`,
+    `${API_URL}/clients/${encodeURIComponent(
+      identificationType
+    )}/${encodeURIComponent(identificationNumber)}`,
     {
       method: "DELETE",
     }
@@ -98,7 +109,7 @@ export async function createAccount(account) {
 
 export async function getAccountByNumber(accountNumber) {
   const response = await fetch(
-    `${API_URL}/accounts/${accountNumber}`
+    `${API_URL}/accounts/${encodeURIComponent(accountNumber)}`
   );
 
   if (!response.ok) {
@@ -110,14 +121,18 @@ export async function getAccountByNumber(accountNumber) {
 }
 
 export async function getAccountsByClient(
+  identificationType,
   identificationNumber
 ) {
   const response = await fetch(
-    `${API_URL}/accounts/client/${identificationNumber}`
+    `${API_URL}/accounts/client/${encodeURIComponent(
+      identificationType
+    )}/${encodeURIComponent(identificationNumber)}`
   );
 
   if (!response.ok) {
     const message = await response.text();
+
     throw new Error(
       message || "No se pudieron obtener las cuentas del cliente"
     );
@@ -131,9 +146,9 @@ export async function changeAccountStatus(
   status
 ) {
   const response = await fetch(
-    `${API_URL}/accounts/${accountNumber}/status?status=${encodeURIComponent(
-      status
-    )}`,
+    `${API_URL}/accounts/${encodeURIComponent(
+      accountNumber
+    )}/status?status=${encodeURIComponent(status)}`,
     {
       method: "PATCH",
     }
@@ -141,6 +156,7 @@ export async function changeAccountStatus(
 
   if (!response.ok) {
     const message = await response.text();
+
     throw new Error(
       message || "No se pudo cambiar el estado de la cuenta"
     );
@@ -151,7 +167,7 @@ export async function changeAccountStatus(
 
 export async function cancelAccount(accountNumber) {
   const response = await fetch(
-    `${API_URL}/accounts/${accountNumber}`,
+    `${API_URL}/accounts/${encodeURIComponent(accountNumber)}`,
     {
       method: "DELETE",
     }
@@ -196,6 +212,7 @@ export async function transferMoney(transfer) {
 
   if (!response.ok) {
     const message = await response.text();
+
     throw new Error(
       message || "No se pudo realizar la transferencia"
     );
@@ -208,11 +225,14 @@ export async function getTransactionsByAccount(
   accountNumber
 ) {
   const response = await fetch(
-    `${API_URL}/transactions/account/${accountNumber}`
+    `${API_URL}/transactions/account/${encodeURIComponent(
+      accountNumber
+    )}`
   );
 
   if (!response.ok) {
     const message = await response.text();
+
     throw new Error(
       message || "No se pudieron obtener los movimientos"
     );

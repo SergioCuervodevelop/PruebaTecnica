@@ -3,11 +3,15 @@ import { createAccount } from "../services/api";
 
 function AccountForm({ onAccountCreated }) {
   const [formData, setFormData] = useState({
+    identificationType: "CC",
     identificationNumber: "",
     accountType: "SAVINGS",
   });
 
   const [createdAccount, setCreatedAccount] = useState(null);
+
+  const [createdClient, setCreatedClient] = useState(null);
+
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,18 +32,27 @@ function AccountForm({ onAccountCreated }) {
     setMessage("");
     setMessageType("");
     setCreatedAccount(null);
+    setCreatedClient(null);
 
     try {
       const account = await createAccount({
         accountType: formData.accountType,
-        identificationNumber: formData.identificationNumber,
+        identificationType: formData.identificationType,
+        identificationNumber: formData.identificationNumber.trim(),
       });
 
       setCreatedAccount(account);
+
+      setCreatedClient({
+        identificationType: formData.identificationType,
+        identificationNumber: formData.identificationNumber.trim(),
+      });
+
       setMessage("Cuenta creada correctamente.");
       setMessageType("success");
 
       setFormData({
+        identificationType: "CC",
         identificationNumber: "",
         accountType: "SAVINGS",
       });
@@ -52,7 +65,7 @@ function AccountForm({ onAccountCreated }) {
 
       setMessage(
         error.message ||
-          "No se pudo crear la cuenta. Verifica el cliente y los datos ingresados."
+          "No se pudo crear la cuenta. Verifica el cliente y los datos ingresados.",
       );
 
       setMessageType("error");
@@ -61,18 +74,47 @@ function AccountForm({ onAccountCreated }) {
     }
   };
 
+  const getIdentificationTypeLabel = (type) => {
+    switch (type) {
+      case "CC":
+        return "Cédula de ciudadanía";
+      case "CE":
+        return "Cédula de extranjería";
+      case "PA":
+        return "Pasaporte";
+      default:
+        return type;
+    }
+  };
+
   return (
     <div className="account-form-container">
       <div className="form-header">
         <h2>Crear cuenta</h2>
 
-        <p>
-          Crea un producto financiero para un cliente registrado.
-        </p>
+        <p>Crea un producto financiero para un cliente registrado.</p>
       </div>
 
       <form className="client-form" onSubmit={handleSubmit}>
         <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="identificationType">Tipo de identificación</label>
+
+            <select
+              id="identificationType"
+              name="identificationType"
+              value={formData.identificationType}
+              onChange={handleChange}
+              required
+            >
+              <option value="CC">Cédula de ciudadanía</option>
+
+              <option value="CE">Cédula de extranjería</option>
+
+              <option value="PA">Pasaporte</option>
+            </select>
+          </div>
+
           <div className="form-group">
             <label htmlFor="identificationNumber">
               Número de identificación
@@ -90,9 +132,7 @@ function AccountForm({ onAccountCreated }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="accountType">
-              Tipo de cuenta
-            </label>
+            <label htmlFor="accountType">Tipo de cuenta</label>
 
             <select
               id="accountType"
@@ -101,50 +141,34 @@ function AccountForm({ onAccountCreated }) {
               onChange={handleChange}
               required
             >
-              <option value="SAVINGS">
-                Cuenta de ahorros
-              </option>
+              <option value="SAVINGS">Cuenta de ahorros</option>
 
-              <option value="CHECKING">
-                Cuenta corriente
-              </option>
+              <option value="CHECKING">Cuenta corriente</option>
             </select>
           </div>
         </div>
 
         {message && (
-          <div className={`form-message ${messageType}`}>
-            {message}
-          </div>
+          <div className={`form-message ${messageType}`}>{message}</div>
         )}
 
         <div className="form-actions">
-          <button
-            type="submit"
-            className="primary-button"
-            disabled={loading}
-          >
+          <button type="submit" className="primary-button" disabled={loading}>
             {loading ? "Creando..." : "Crear cuenta"}
           </button>
         </div>
       </form>
 
-      {createdAccount && (
+      {createdAccount && createdClient && (
         <div className="client-result">
           <div className="client-result-header">
             <div>
-              <span className="client-id">
-                Número de cuenta
-              </span>
+              <span className="client-id">Número de cuenta</span>
 
-              <h3>
-                {createdAccount.accountNumber}
-              </h3>
+              <h3>{createdAccount.accountNumber}</h3>
             </div>
 
-            <span className="status-badge">
-              {createdAccount.status}
-            </span>
+            <span className="status-badge">{createdAccount.status}</span>
           </div>
 
           <div className="client-details">
@@ -162,9 +186,7 @@ function AccountForm({ onAccountCreated }) {
               <span>Saldo</span>
 
               <strong>
-                ${Number(
-                  createdAccount.balance || 0
-                ).toLocaleString("es-CO")}
+                ${Number(createdAccount.balance || 0).toLocaleString("es-CO")}
               </strong>
             </div>
 
@@ -172,18 +194,25 @@ function AccountForm({ onAccountCreated }) {
               <span>Saldo disponible</span>
 
               <strong>
-                ${Number(
-                  createdAccount.availableBalance || 0
-                ).toLocaleString("es-CO")}
+                $
+                {Number(createdAccount.availableBalance || 0).toLocaleString(
+                  "es-CO",
+                )}
               </strong>
             </div>
 
             <div>
-              <span>Cliente</span>
+              <span>Tipo de identificación</span>
 
               <strong>
-                {formData.identificationNumber || "Cliente registrado"}
+                {getIdentificationTypeLabel(createdClient.identificationType)}
               </strong>
+            </div>
+
+            <div>
+              <span>Número de identificación</span>
+
+              <strong>{createdClient.identificationNumber}</strong>
             </div>
           </div>
         </div>
