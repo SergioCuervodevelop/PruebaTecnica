@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   getClientSummary,
-  getClientById,
+  getClientByIdentificationNumber,
   getAccountsByClient,
   updateClient,
   deleteClient,
@@ -20,7 +20,11 @@ function ClientSearch() {
 
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadingClientId, setLoadingClientId] = useState(null);
+
+  const [
+    loadingIdentificationNumber,
+    setLoadingIdentificationNumber,
+  ] = useState(null);
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
@@ -38,7 +42,8 @@ function ClientSearch() {
       console.error(error);
 
       setMessage(
-        error.message || "No se pudieron cargar los clientes."
+        error.message ||
+          "No se pudieron cargar los clientes."
       );
 
       setMessageType("error");
@@ -60,21 +65,34 @@ function ClientSearch() {
     }
   }, [selectedClient]);
 
-  const handleView = async (clientId) => {
+  const handleView = async (identificationNumber) => {
     try {
       setMessage("");
       setMessageType("");
       setEditing(false);
-      setLoadingClientId(clientId);
+
+      setLoadingIdentificationNumber(
+        identificationNumber
+      );
+
       setClientAccounts([]);
 
-      const [client, accounts] = await Promise.all([
-        getClientById(clientId),
-        getAccountsByClient(clientId),
-      ]);
+      const [client, accounts] =
+        await Promise.all([
+          getClientByIdentificationNumber(
+            identificationNumber
+          ),
+
+          getAccountsByClient(
+            identificationNumber
+          ),
+        ]);
 
       setSelectedClient(client);
-      setClientAccounts(Array.isArray(accounts) ? accounts : []);
+
+      setClientAccounts(
+        Array.isArray(accounts) ? accounts : []
+      );
 
       setEditData({
         firstName: client.firstName || "",
@@ -88,12 +106,13 @@ function ClientSearch() {
       setClientAccounts([]);
 
       setMessage(
-        error.message || "No se pudo consultar el cliente."
+        error.message ||
+          "No se pudo consultar el cliente."
       );
 
       setMessageType("error");
     } finally {
-      setLoadingClientId(null);
+      setLoadingIdentificationNumber(null);
     }
   };
 
@@ -117,15 +136,19 @@ function ClientSearch() {
       setMessage("");
       setMessageType("");
 
-      const updatedClient = await updateClient(
-        selectedClient.id,
-        editData
-      );
+      const updatedClient =
+        await updateClient(
+          selectedClient.identificationNumber,
+          editData
+        );
 
       setSelectedClient(updatedClient);
       setEditing(false);
 
-      setMessage("Cliente actualizado correctamente.");
+      setMessage(
+        "Cliente actualizado correctamente."
+      );
+
       setMessageType("success");
 
       await loadClients();
@@ -133,7 +156,8 @@ function ClientSearch() {
       console.error(error);
 
       setMessage(
-        error.message || "No se pudo actualizar el cliente."
+        error.message ||
+          "No se pudo actualizar el cliente."
       );
 
       setMessageType("error");
@@ -157,13 +181,18 @@ function ClientSearch() {
       setMessage("");
       setMessageType("");
 
-      await deleteClient(selectedClient.id);
+      await deleteClient(
+        selectedClient.identificationNumber
+      );
 
       setSelectedClient(null);
       setClientAccounts([]);
       setEditing(false);
 
-      setMessage("Cliente eliminado correctamente.");
+      setMessage(
+        "Cliente eliminado correctamente."
+      );
+
       setMessageType("success");
 
       await loadClients();
@@ -247,13 +276,15 @@ function ClientSearch() {
         <h2>Clientes registrados</h2>
 
         <p>
-          Selecciona un cliente para consultar su información
-          completa.
+          Selecciona un cliente para consultar su
+          información completa.
         </p>
       </div>
 
       {message && (
-        <div className={`form-message ${messageType}`}>
+        <div
+          className={`form-message ${messageType}`}
+        >
           {message}
         </div>
       )}
@@ -267,7 +298,7 @@ function ClientSearch() {
           <table className="clients-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Identificación</th>
                 <th>Cliente</th>
                 <th>Cuentas</th>
                 <th>Acción</th>
@@ -276,27 +307,40 @@ function ClientSearch() {
 
             <tbody>
               {clients.map((client) => (
-                <tr key={client.clientId}>
-                  <td>{client.clientId}</td>
-
+                <tr
+                  key={
+                    client.identificationNumber
+                  }
+                >
                   <td>
-                    {client.firstName} {client.lastName}
+                    {client.identificationNumber}
                   </td>
 
-                  <td>{client.accountCount}</td>
+                  <td>
+                    {client.firstName}{" "}
+                    {client.lastName}
+                  </td>
+
+                  <td>
+                    {client.accountCount}
+                  </td>
 
                   <td>
                     <button
                       type="button"
                       className="table-action-button"
                       onClick={() =>
-                        handleView(client.clientId)
+                        handleView(
+                          client.identificationNumber
+                        )
                       }
                       disabled={
-                        loadingClientId === client.clientId
+                        loadingIdentificationNumber ===
+                        client.identificationNumber
                       }
                     >
-                      {loadingClientId === client.clientId
+                      {loadingIdentificationNumber ===
+                      client.identificationNumber
                         ? "Abriendo..."
                         : "Ver"}
                     </button>
@@ -316,7 +360,10 @@ function ClientSearch() {
           <div className="client-result-header">
             <div>
               <span className="client-id">
-                Cliente #{selectedClient.id}
+                Identificación:{" "}
+                {
+                  selectedClient.identificationNumber
+                }
               </span>
 
               <h3>
@@ -334,21 +381,32 @@ function ClientSearch() {
             <>
               <div className="client-details">
                 <div>
-                  <span>Tipo de identificación</span>
+                  <span>
+                    Tipo de identificación
+                  </span>
+
                   <strong>
-                    {selectedClient.identificationType}
+                    {
+                      selectedClient.identificationType
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <span>Número de identificación</span>
+                  <span>
+                    Número de identificación
+                  </span>
+
                   <strong>
-                    {selectedClient.identificationNumber}
+                    {
+                      selectedClient.identificationNumber
+                    }
                   </strong>
                 </div>
 
                 <div>
                   <span>Nombre</span>
+
                   <strong>
                     {selectedClient.firstName}
                   </strong>
@@ -356,13 +414,17 @@ function ClientSearch() {
 
                 <div>
                   <span>Apellido</span>
+
                   <strong>
                     {selectedClient.lastName}
                   </strong>
                 </div>
 
                 <div>
-                  <span>Correo electrónico</span>
+                  <span>
+                    Correo electrónico
+                  </span>
+
                   <strong>
                     {selectedClient.email ||
                       "No registrado"}
@@ -370,7 +432,10 @@ function ClientSearch() {
                 </div>
 
                 <div>
-                  <span>Fecha de nacimiento</span>
+                  <span>
+                    Fecha de nacimiento
+                  </span>
+
                   <strong>
                     {selectedClient.birthDate}
                   </strong>
@@ -380,21 +445,26 @@ function ClientSearch() {
               <div className="client-accounts-section">
                 <div className="form-header">
                   <h3>
-                    Cuentas asociadas ({clientAccounts.length})
+                    Cuentas asociadas (
+                    {clientAccounts.length})
                   </h3>
 
                   <p>
-                    Productos financieros pertenecientes a este
-                    cliente.
+                    Productos financieros
+                    pertenecientes a este cliente.
                   </p>
                 </div>
 
                 {clientAccounts.length === 0 ? (
                   <div className="empty-history">
-                    <strong>Sin cuentas asociadas</strong>
+                    <strong>
+                      Sin cuentas asociadas
+                    </strong>
+
                     <p>
-                      Este cliente todavía no tiene productos
-                      financieros registrados.
+                      Este cliente todavía no tiene
+                      productos financieros
+                      registrados.
                     </p>
                   </div>
                 ) : (
@@ -402,8 +472,9 @@ function ClientSearch() {
                     <table className="clients-table">
                       <thead>
                         <tr>
-                          <th>ID</th>
-                          <th>Número</th>
+                          <th>
+                            Número de cuenta
+                          </th>
                           <th>Tipo</th>
                           <th>Saldo</th>
                           <th>Disponible</th>
@@ -412,46 +483,53 @@ function ClientSearch() {
                       </thead>
 
                       <tbody>
-                        {clientAccounts.map((account) => (
-                          <tr key={account.id}>
-                            <td>
-                              <strong>#{account.id}</strong>
-                            </td>
+                        {clientAccounts.map(
+                          (account) => (
+                            <tr
+                              key={
+                                account.accountNumber
+                              }
+                            >
+                              <td>
+                                <strong>
+                                  {
+                                    account.accountNumber
+                                  }
+                                </strong>
+                              </td>
 
-                            <td>
-                              {account.accountNumber}
-                            </td>
-
-                            <td>
-                              {getAccountTypeName(
-                                account.accountType
-                              )}
-                            </td>
-
-                            <td>
-                              {formatMoney(account.balance)}
-                            </td>
-
-                            <td>
-                              {formatMoney(
-                                account.availableBalance
-                              )}
-                            </td>
-
-                            <td>
-                              <span
-                                className={`account-status ${
-                                  account.status
-                                    ?.toLowerCase()
-                                }`}
-                              >
-                                {getAccountStatusName(
-                                  account.status
+                              <td>
+                                {getAccountTypeName(
+                                  account.accountType
                                 )}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+
+                              <td>
+                                {formatMoney(
+                                  account.balance
+                                )}
+                              </td>
+
+                              <td>
+                                {formatMoney(
+                                  account.availableBalance
+                                )}
+                              </td>
+
+                              <td>
+                                <span
+                                  className={`account-status ${
+                                    account.status?.toLowerCase()
+                                  }`}
+                                >
+                                  {getAccountStatusName(
+                                    account.status
+                                  )}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -470,7 +548,9 @@ function ClientSearch() {
                 <button
                   type="button"
                   className="secondary-button"
-                  onClick={() => setEditing(true)}
+                  onClick={() =>
+                    setEditing(true)
+                  }
                 >
                   Editar
                 </button>

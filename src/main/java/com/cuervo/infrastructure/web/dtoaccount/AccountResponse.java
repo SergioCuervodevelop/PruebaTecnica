@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 public record AccountResponse(
 
-        Long id,
         AccountType accountType,
         String accountNumber,
         AccountStatus status,
@@ -16,8 +15,7 @@ public record AccountResponse(
         BigDecimal availableBalance,
         Boolean gmfExempt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt,
-        Long clientId
+        LocalDateTime updatedAt
 
 ) {
 }

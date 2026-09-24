@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface GetTransactionsByAccountUseCase {
 
-    List<Transaction> execute(Long accountId);
+    List<Transaction> execute(String accountNumber);
 }

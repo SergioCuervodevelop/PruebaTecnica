@@ -1,12 +1,12 @@
 import { useState } from "react";
 import {
-  getAccountById,
+  getAccountByNumber,
   changeAccountStatus,
   cancelAccount,
 } from "../services/api";
 
 function AccountSearch() {
-  const [accountId, setAccountId] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [account, setAccount] = useState(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -15,8 +15,8 @@ function AccountSearch() {
   const handleSearch = async (event) => {
     event.preventDefault();
 
-    if (!accountId) {
-      setError("Ingresa el ID de la cuenta.");
+    if (!accountNumber.trim()) {
+      setError("Ingresa el número de la cuenta.");
       return;
     }
 
@@ -26,26 +26,37 @@ function AccountSearch() {
     setAccount(null);
 
     try {
-      const data = await getAccountById(accountId);
+      const data = await getAccountByNumber(
+        accountNumber.trim()
+      );
+
       setAccount(data);
     } catch (error) {
       console.error(error);
-      setError("No se encontró la cuenta.");
+
+      setError(
+        error.message || "No se encontró la cuenta."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleStatusChange = async (status) => {
+    if (!account) {
+      return;
+    }
+
     setLoading(true);
     setError("");
     setMessage("");
 
     try {
-      const updatedAccount = await changeAccountStatus(
-        account.id,
-        status
-      );
+      const updatedAccount =
+        await changeAccountStatus(
+          account.accountNumber,
+          status
+        );
 
       setAccount(updatedAccount);
 
@@ -58,8 +69,10 @@ function AccountSearch() {
       }
     } catch (error) {
       console.error(error);
+
       setError(
-        error.message || "No se pudo cambiar el estado de la cuenta."
+        error.message ||
+          "No se pudo cambiar el estado de la cuenta."
       );
     } finally {
       setLoading(false);
@@ -67,6 +80,10 @@ function AccountSearch() {
   };
 
   const handleCancel = async () => {
+    if (!account) {
+      return;
+    }
+
     const confirmed = window.confirm(
       `¿Seguro que deseas cancelar la cuenta ${account.accountNumber}?`
     );
@@ -80,12 +97,17 @@ function AccountSearch() {
     setMessage("");
 
     try {
-      const updatedAccount = await cancelAccount(account.id);
+      const updatedAccount =
+        await cancelAccount(account.accountNumber);
 
       setAccount(updatedAccount);
-      setMessage("Cuenta cancelada correctamente.");
+
+      setMessage(
+        "Cuenta cancelada correctamente."
+      );
     } catch (error) {
       console.error(error);
+
       setError(
         error.message ||
           "No se pudo cancelar la cuenta. Verifica que su saldo sea $0."
@@ -96,11 +118,14 @@ function AccountSearch() {
   };
 
   const formatMoney = (value) => {
-    return Number(value || 0).toLocaleString("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    });
+    return Number(value || 0).toLocaleString(
+      "es-CO",
+      {
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 0,
+      }
+    );
   };
 
   const getStatusText = (status) => {
@@ -125,26 +150,28 @@ function AccountSearch() {
         <h2>Buscar cuenta</h2>
 
         <p>
-          Consulta y administra un producto financiero utilizando
-          el ID de la cuenta.
+          Consulta y administra un producto financiero
+          utilizando el número de la cuenta.
         </p>
       </div>
 
-      <form className="search-form" onSubmit={handleSearch}>
+      <form
+        className="search-form"
+        onSubmit={handleSearch}
+      >
         <div className="search-input">
-          <label htmlFor="accountId">
-            ID de la cuenta
+          <label htmlFor="accountNumber">
+            Número de cuenta
           </label>
 
           <input
-            id="accountId"
-            type="number"
-            min="1"
-            value={accountId}
+            id="accountNumber"
+            type="text"
+            value={accountNumber}
             onChange={(event) =>
-              setAccountId(event.target.value)
+              setAccountNumber(event.target.value)
             }
-            placeholder="Ej. 1"
+            placeholder="Ej. 5312345678"
             required
           />
         </div>
@@ -175,10 +202,12 @@ function AccountSearch() {
           <div className="client-result-header">
             <div>
               <span className="client-id">
-                Cuenta #{account.id}
+                Número de cuenta
               </span>
 
-              <h3>{account.accountNumber}</h3>
+              <h3>
+                {account.accountNumber}
+              </h3>
             </div>
 
             <span
@@ -217,15 +246,9 @@ function AccountSearch() {
               <span>Saldo disponible</span>
 
               <strong>
-                {formatMoney(account.availableBalance)}
-              </strong>
-            </div>
-
-            <div>
-              <span>ID del cliente</span>
-
-              <strong>
-                #{account.clientId}
+                {formatMoney(
+                  account.availableBalance
+                )}
               </strong>
             </div>
 
@@ -253,7 +276,9 @@ function AccountSearch() {
                   type="button"
                   className="secondary-button"
                   onClick={() =>
-                    handleStatusChange("INACTIVE")
+                    handleStatusChange(
+                      "INACTIVE"
+                    )
                   }
                   disabled={loading}
                 >
@@ -261,12 +286,15 @@ function AccountSearch() {
                 </button>
               )}
 
-              {account.status === "INACTIVE" && (
+              {account.status ===
+                "INACTIVE" && (
                 <button
                   type="button"
                   className="primary-button"
                   onClick={() =>
-                    handleStatusChange("ACTIVE")
+                    handleStatusChange(
+                      "ACTIVE"
+                    )
                   }
                   disabled={loading}
                 >

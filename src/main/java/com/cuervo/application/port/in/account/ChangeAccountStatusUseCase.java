@@ -5,5 +5,8 @@ import com.cuervo.domain.model.Account;
 
 public interface ChangeAccountStatusUseCase {
 
-    Account change(Long id, AccountStatus status);
+    Account change(
+            String accountNumber,
+            AccountStatus status
+    );
 }

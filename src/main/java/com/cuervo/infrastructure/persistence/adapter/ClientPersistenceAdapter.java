@@ -36,9 +36,11 @@ public class ClientPersistenceAdapter implements ClientRepositoryPort {
     }
 
     @Override
-    public Optional<Client> findById(Long id) {
+    public Optional<Client> findByIdentificationNumber(
+            String identificationNumber) {
 
-        return clientJpaRepository.findById(id)
+        return clientJpaRepository
+                .findByIdentificationNumber(identificationNumber)
                 .map(clientMapper::toDomain);
     }
 
@@ -51,8 +53,11 @@ public class ClientPersistenceAdapter implements ClientRepositoryPort {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteByIdentificationNumber(
+            String identificationNumber) {
 
-        clientJpaRepository.deleteById(id);
+        clientJpaRepository
+                .findByIdentificationNumber(identificationNumber)
+                .ifPresent(clientJpaRepository::delete);
     }
 }

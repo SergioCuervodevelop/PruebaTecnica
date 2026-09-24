@@ -1,10 +1,11 @@
 package com.cuervo.infrastructure.web.dtoclient;
 
-
 public record ClientAccountSummary(
-        Long clientId,
+
+        String identificationNumber,
         String firstName,
         String lastName,
         int accountCount
+
 ) {
 }

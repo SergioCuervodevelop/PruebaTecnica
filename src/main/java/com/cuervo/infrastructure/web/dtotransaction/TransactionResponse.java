@@ -7,12 +7,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record TransactionResponse(
-        Long id,
+
         TransactionType transactionType,
         MovementType movementType,
         BigDecimal amount,
         LocalDateTime transactionDate,
-        Long accountId,
+        String accountNumber,
         String transferId
+
 ) {
 }

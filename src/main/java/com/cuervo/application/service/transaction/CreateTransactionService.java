@@ -1,6 +1,7 @@
 package com.cuervo.application.service.transaction;
 
 import com.cuervo.application.port.in.transaction.CreateTransactionUseCase;
+import com.cuervo.domain.enums.MovementType;
 import com.cuervo.domain.enums.TransactionType;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.exception.InvalidTransferException;
@@ -10,7 +11,10 @@ import com.cuervo.domain.port.out.AccountRepositoryPort;
 import com.cuervo.domain.port.out.TransactionRepositoryPort;
 import org.springframework.transaction.annotation.Transactional;
 
-public class CreateTransactionService implements CreateTransactionUseCase {
+import java.math.BigDecimal;
+
+public class CreateTransactionService
+        implements CreateTransactionUseCase {
 
     private final TransactionRepositoryPort transactionRepositoryPort;
     private final AccountRepositoryPort accountRepositoryPort;
@@ -25,28 +29,42 @@ public class CreateTransactionService implements CreateTransactionUseCase {
 
     @Override
     @Transactional
-    public Transaction execute(Transaction transaction) {
+    public Transaction execute(
+            String accountNumber,
+            TransactionType transactionType,
+            BigDecimal amount) {
 
         Account account = accountRepositoryPort
-                .findById(transaction.getAccountId())
+                .findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Account not found"));
+                        new EntityNotFoundException(
+                                "Account not found"
+                        ));
 
-        if (transaction.getTransactionType() == TransactionType.TRANSFER) {
-            throw new InvalidTransferException(
+        MovementType movementType = switch (transactionType) {
+
+            case DEPOSIT -> {
+                account.deposit(amount);
+                yield MovementType.CREDIT;
+            }
+
+            case WITHDRAWAL -> {
+                account.withdraw(amount);
+                yield MovementType.DEBIT;
+            }
+
+            case TRANSFER -> throw new InvalidTransferException(
                     "Transfers must use the transfer endpoint"
             );
-        }
+        };
 
-        if (transaction.getTransactionType() == TransactionType.DEPOSIT) {
-
-            account.deposit(transaction.getAmount());
-
-        } else if (transaction.getTransactionType() == TransactionType.WITHDRAWAL) {
-
-            account.withdraw(transaction.getAmount());
-
-        }
+        Transaction transaction = new Transaction(
+                transactionType,
+                movementType,
+                amount,
+                account.getId(),
+                null
+        );
 
         accountRepositoryPort.save(account);
 

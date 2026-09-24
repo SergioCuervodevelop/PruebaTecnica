@@ -30,19 +30,26 @@ class DeleteClientServiceTest {
 
         Client client = mock(Client.class);
 
-        when(clientRepositoryPort.findById(1L))
+        String identificationNumber = "1075234567";
+
+        when(clientRepositoryPort
+                .findByIdentificationNumber(identificationNumber))
                 .thenReturn(Optional.of(client));
 
-        when(accountRepositoryPort.existsByClientId(1L))
+        when(client.getId())
+                .thenReturn(1L);
+
+        when(accountRepositoryPort
+                .existsByClientId(1L))
                 .thenReturn(true);
 
         assertThrows(
                 InvalidClientException.class,
-                () -> service.execute(1L)
+                () -> service.execute(identificationNumber)
         );
 
         verify(clientRepositoryPort, never())
-                .deleteById(1L);
+                .deleteByIdentificationNumber(identificationNumber);
     }
 
     @Test
@@ -62,14 +69,22 @@ class DeleteClientServiceTest {
 
         Client client = mock(Client.class);
 
-        when(clientRepositoryPort.findById(1L))
+        String identificationNumber = "1075234567";
+
+        when(clientRepositoryPort
+                .findByIdentificationNumber(identificationNumber))
                 .thenReturn(Optional.of(client));
 
-        when(accountRepositoryPort.existsByClientId(1L))
+        when(client.getId())
+                .thenReturn(1L);
+
+        when(accountRepositoryPort
+                .existsByClientId(1L))
                 .thenReturn(false);
 
-        service.execute(1L);
+        service.execute(identificationNumber);
 
-        verify(clientRepositoryPort).deleteById(1L);
+        verify(clientRepositoryPort)
+                .deleteByIdentificationNumber(identificationNumber);
     }
 }

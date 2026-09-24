@@ -96,10 +96,12 @@ public class BeanConfiguration {
 
     @Bean
     public GetAccountsByClientUseCase getAccountsByClientUseCase(
-            AccountRepositoryPort accountRepositoryPort) {
+            AccountRepositoryPort accountRepositoryPort,
+            ClientRepositoryPort clientRepositoryPort) {
 
         return new GetAccountsByClientService(
-                accountRepositoryPort
+                accountRepositoryPort,
+                clientRepositoryPort
         );
     }
 
@@ -134,10 +136,12 @@ public class BeanConfiguration {
 
     @Bean
     public GetTransactionsByAccountUseCase getTransactionsByAccountUseCase(
-            TransactionRepositoryPort transactionRepositoryPort) {
+            TransactionRepositoryPort transactionRepositoryPort,
+            AccountRepositoryPort accountRepositoryPort) {
 
         return new GetTransactionsByAccountService(
-                transactionRepositoryPort
+                transactionRepositoryPort,
+                accountRepositoryPort
         );
     }
 

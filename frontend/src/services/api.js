@@ -27,8 +27,12 @@ export async function createClient(client) {
   return response.json();
 }
 
-export async function getClientById(id) {
-  const response = await fetch(`${API_URL}/clients/${id}`);
+export async function getClientByIdentificationNumber(
+  identificationNumber
+) {
+  const response = await fetch(
+    `${API_URL}/clients/${identificationNumber}`
+  );
 
   if (!response.ok) {
     const message = await response.text();
@@ -38,14 +42,20 @@ export async function getClientById(id) {
   return response.json();
 }
 
-export async function updateClient(id, client) {
-  const response = await fetch(`${API_URL}/clients/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(client),
-  });
+export async function updateClient(
+  identificationNumber,
+  client
+) {
+  const response = await fetch(
+    `${API_URL}/clients/${identificationNumber}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(client),
+    }
+  );
 
   if (!response.ok) {
     const message = await response.text();
@@ -55,10 +65,13 @@ export async function updateClient(id, client) {
   return response.json();
 }
 
-export async function deleteClient(id) {
-  const response = await fetch(`${API_URL}/clients/${id}`, {
-    method: "DELETE",
-  });
+export async function deleteClient(identificationNumber) {
+  const response = await fetch(
+    `${API_URL}/clients/${identificationNumber}`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
     const message = await response.text();
@@ -83,8 +96,10 @@ export async function createAccount(account) {
   return response.json();
 }
 
-export async function getAccountById(id) {
-  const response = await fetch(`${API_URL}/accounts/${id}`);
+export async function getAccountByNumber(accountNumber) {
+  const response = await fetch(
+    `${API_URL}/accounts/${accountNumber}`
+  );
 
   if (!response.ok) {
     const message = await response.text();
@@ -94,9 +109,11 @@ export async function getAccountById(id) {
   return response.json();
 }
 
-export async function getAccountsByClient(clientId) {
+export async function getAccountsByClient(
+  identificationNumber
+) {
   const response = await fetch(
-    `${API_URL}/accounts/client/${clientId}`
+    `${API_URL}/accounts/client/${identificationNumber}`
   );
 
   if (!response.ok) {
@@ -109,9 +126,14 @@ export async function getAccountsByClient(clientId) {
   return response.json();
 }
 
-export async function changeAccountStatus(id, status) {
+export async function changeAccountStatus(
+  accountNumber,
+  status
+) {
   const response = await fetch(
-    `${API_URL}/accounts/${id}/status?status=${encodeURIComponent(status)}`,
+    `${API_URL}/accounts/${accountNumber}/status?status=${encodeURIComponent(
+      status
+    )}`,
     {
       method: "PATCH",
     }
@@ -127,10 +149,13 @@ export async function changeAccountStatus(id, status) {
   return response.json();
 }
 
-export async function cancelAccount(id) {
-  const response = await fetch(`${API_URL}/accounts/${id}`, {
-    method: "DELETE",
-  });
+export async function cancelAccount(accountNumber) {
+  const response = await fetch(
+    `${API_URL}/accounts/${accountNumber}`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
     const message = await response.text();
@@ -158,25 +183,32 @@ export async function createTransaction(transaction) {
 }
 
 export async function transferMoney(transfer) {
-  const response = await fetch(`${API_URL}/transactions/transfer`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(transfer),
-  });
+  const response = await fetch(
+    `${API_URL}/transactions/transfer`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(transfer),
+    }
+  );
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || "No se pudo realizar la transferencia");
+    throw new Error(
+      message || "No se pudo realizar la transferencia"
+    );
   }
 
   return response.json();
 }
 
-export async function getTransactionsByAccount(accountId) {
+export async function getTransactionsByAccount(
+  accountNumber
+) {
   const response = await fetch(
-    `${API_URL}/transactions/account/${accountId}`
+    `${API_URL}/transactions/account/${accountNumber}`
   );
 
   if (!response.ok) {

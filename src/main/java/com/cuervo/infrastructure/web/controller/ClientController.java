@@ -1,6 +1,5 @@
 package com.cuervo.infrastructure.web.controller;
 
-
 import com.cuervo.application.port.in.client.*;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.model.Client;
@@ -58,13 +57,17 @@ public class ClientController {
                 .body(response);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{identificationNumber}")
     public ResponseEntity<ClientResponse> getClient(
-            @PathVariable Long id) {
+            @PathVariable String identificationNumber) {
 
-        Client client = getClientUseCase.execute(id)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Client not found"));
+        Client client =
+                getClientUseCase
+                        .execute(identificationNumber)
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(
+                                        "Client not found"
+                                ));
 
         ClientResponse response =
                 clientWebMapper.toResponse(client);
@@ -72,15 +75,19 @@ public class ClientController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{identificationNumber}")
     public ResponseEntity<ClientResponse> updateClient(
-            @PathVariable Long id,
+            @PathVariable String identificationNumber,
             @Valid @RequestBody UpdateClientRequest request) {
 
-        Client client = clientWebMapper.toDomain(request);
+        Client client =
+                clientWebMapper.toDomain(request);
 
         Client updatedClient =
-                updateClientUseCase.execute(id, client);
+                updateClientUseCase.execute(
+                        identificationNumber,
+                        client
+                );
 
         ClientResponse response =
                 clientWebMapper.toResponse(updatedClient);
@@ -88,13 +95,17 @@ public class ClientController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{identificationNumber}")
     public ResponseEntity<Void> deleteClient(
-            @PathVariable Long id) {
+            @PathVariable String identificationNumber) {
 
-        deleteClientUseCase.execute(id);
+        deleteClientUseCase.execute(
+                identificationNumber
+        );
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
     @GetMapping("/summary")

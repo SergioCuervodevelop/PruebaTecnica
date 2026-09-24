@@ -6,5 +6,7 @@ import java.util.List;
 
 public interface GetAccountsByClientUseCase {
 
-    List<Account> getByClientId(Long clientId);
+    List<Account> getByIdentificationNumber(
+            String identificationNumber
+    );
 }

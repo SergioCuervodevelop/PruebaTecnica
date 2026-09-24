@@ -4,5 +4,5 @@ import com.cuervo.domain.model.Account;
 
 public interface CancelAccountUseCase {
 
-    Account cancel(Long id);
+    Account cancel(String accountNumber);
 }

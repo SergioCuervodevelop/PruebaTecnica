@@ -14,11 +14,14 @@ public class GetAccountService implements GetAccountUseCase {
     }
 
     @Override
-    public Account getById(Long id) {
+    public Account getByAccountNumber(String accountNumber) {
 
-        return accountRepositoryPort.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Account not found"
-                ));
+        return accountRepositoryPort
+                .findByAccountNumber(accountNumber)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Account not found"
+                        )
+                );
     }
 }

@@ -16,11 +16,16 @@ public class UpdateClientService implements UpdateClientUseCase {
     }
 
     @Override
-    public Client execute(Long id, Client client) {
+    public Client execute(
+            String identificationNumber,
+            Client client) {
 
-        Client existingClient = clientRepositoryPort.findById(id)
+        Client existingClient = clientRepositoryPort
+                .findByIdentificationNumber(identificationNumber)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Client not found"));
+                        new EntityNotFoundException(
+                                "Client not found"
+                        ));
 
         existingClient.updateInformation(
                 client.getFirstName(),

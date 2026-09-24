@@ -1,12 +1,12 @@
 package com.cuervo.application.service.transaction;
 
 import com.cuervo.application.port.in.transaction.TransferMoneyUseCase;
+import com.cuervo.domain.enums.MovementType;
+import com.cuervo.domain.enums.TransactionType;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.exception.InvalidTransferException;
 import com.cuervo.domain.model.Account;
 import com.cuervo.domain.model.Transaction;
-import com.cuervo.domain.enums.MovementType;
-import com.cuervo.domain.enums.TransactionType;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
 import com.cuervo.domain.port.out.TransactionRepositoryPort;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,25 +31,29 @@ public class TransferMoneyService implements TransferMoneyUseCase {
     @Override
     @Transactional
     public List<Transaction> transfer(
-            Long sourceAccountId,
-            Long destinationAccountId,
+            String sourceAccountNumber,
+            String destinationAccountNumber,
             BigDecimal amount) {
 
-        if (sourceAccountId.equals(destinationAccountId)) {
+        if (sourceAccountNumber.equals(destinationAccountNumber)) {
             throw new InvalidTransferException(
                     "Source and destination accounts must be different"
             );
         }
 
-        Account sourceAccount = accountRepositoryPort.findById(sourceAccountId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Source account not found"
-                ));
+        Account sourceAccount = accountRepositoryPort
+                .findByAccountNumber(sourceAccountNumber)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Source account not found"
+                        ));
 
-        Account destinationAccount = accountRepositoryPort.findById(destinationAccountId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Destination account not found"
-                ));
+        Account destinationAccount = accountRepositoryPort
+                .findByAccountNumber(destinationAccountNumber)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Destination account not found"
+                        ));
 
         String transferId = UUID.randomUUID().toString();
 
@@ -63,7 +67,7 @@ public class TransferMoneyService implements TransferMoneyUseCase {
                 TransactionType.TRANSFER,
                 MovementType.DEBIT,
                 amount,
-                sourceAccountId,
+                sourceAccount.getId(),
                 transferId
         );
 
@@ -71,12 +75,15 @@ public class TransferMoneyService implements TransferMoneyUseCase {
                 TransactionType.TRANSFER,
                 MovementType.CREDIT,
                 amount,
-                destinationAccountId,
+                destinationAccount.getId(),
                 transferId
         );
 
-        Transaction savedDebit = transactionRepositoryPort.save(debit);
-        Transaction savedCredit = transactionRepositoryPort.save(credit);
+        Transaction savedDebit =
+                transactionRepositoryPort.save(debit);
+
+        Transaction savedCredit =
+                transactionRepositoryPort.save(credit);
 
         return List.of(savedDebit, savedCredit);
     }

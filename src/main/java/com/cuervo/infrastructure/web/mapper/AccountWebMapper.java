@@ -8,19 +8,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccountWebMapper {
 
-    public Account toDomain(CreateAccountRequest request) {
-
-        return new Account(
-                request.accountType(),
-                null,
-                request.clientId()
-        );
-    }
-
     public AccountResponse toResponse(Account account) {
 
         return new AccountResponse(
-                account.getId(),
                 account.getAccountType(),
                 account.getAccountNumber(),
                 account.getStatus(),
@@ -28,8 +18,7 @@ public class AccountWebMapper {
                 account.getAvailableBalance(),
                 account.getGmfExempt(),
                 account.getCreatedAt(),
-                account.getUpdatedAt(),
-                account.getClientId()
+                account.getUpdatedAt()
         );
-    }   
+    }
 }

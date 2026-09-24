@@ -29,6 +29,7 @@ El backend fue construido con Java y Spring Boot utilizando arquitectura hexagon
 
 - Docker
 - Docker Compose
+- Nginx
 - Postman
 - Git
 - GitHub
@@ -91,6 +92,30 @@ Aquí se encuentran:
 - Configuración de CORS
 - Manejo global de excepciones
 
+
+## Identificadores públicos e internos
+
+La API utiliza identificadores de negocio en lugar de exponer los IDs técnicos de la base de datos.
+
+### Cliente
+
+- `id`: identificador técnico interno generado por la base de datos.
+- `identificationNumber`: identificador público utilizado para consultar, actualizar y eliminar clientes.
+
+### Cuenta
+
+- `id`: identificador técnico interno generado por la base de datos.
+- `accountNumber`: identificador público utilizado para consultar, modificar y cancelar cuentas.
+
+Las relaciones internas continúan usando los IDs técnicos:
+
+```text
+accounts.client_id      -> clients.id
+transactions.account_id -> accounts.id
+```
+
+De esta manera, los IDs técnicos permanecen internos mientras la API trabaja con `identificationNumber` y `accountNumber`.
+
 ## Funcionalidades
 
 ### Clientes
@@ -114,6 +139,12 @@ Se realizan validaciones básicas como:
 - Correo electrónico válido.
 - Tipo y número de identificación obligatorios.
 - Fecha de nacimiento obligatoria.
+
+Tipos de identificación permitidos:
+
+- `CC`: Cédula de ciudadanía.
+- `PA`: Pasaporte.
+- `CE`: Cédula de extranjería.
 
 ## Cuentas
 
@@ -315,6 +346,9 @@ PruebaTecnica/
 │   ├── ddl.sql
 │   └── dml.sql
 ├── frontend/
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   └── src/
 ├── src/
 │   ├── main/
 │   │   └── java/
@@ -336,9 +370,9 @@ PruebaTecnica/
 
 ```text
 POST   /api/clients
-GET    /api/clients/{id}
-PUT    /api/clients/{id}
-DELETE /api/clients/{id}
+GET    /api/clients/{identificationNumber}
+PUT    /api/clients/{identificationNumber}
+DELETE /api/clients/{identificationNumber}
 GET    /api/clients/summary
 ```
 
@@ -346,23 +380,23 @@ GET    /api/clients/summary
 
 ```text
 POST   /api/accounts
-GET    /api/accounts/{id}
-GET    /api/accounts/client/{clientId}
-PATCH  /api/accounts/{id}/status
-DELETE /api/accounts/{id}
+GET    /api/accounts/{accountNumber}
+GET    /api/accounts/client/{identificationNumber}
+PATCH  /api/accounts/{accountNumber}/status?status=ACTIVE|INACTIVE
+DELETE /api/accounts/{accountNumber}
 ```
 
 Ejemplo para cambiar el estado de una cuenta:
 
 ```text
-PATCH /api/accounts/1/status?status=INACTIVE
+PATCH /api/accounts/5312345678/status?status=INACTIVE
 ```
 
 ### Transacciones
 
 ```text
 POST /api/transactions
-GET  /api/transactions/account/{accountId}
+GET  /api/transactions/account/{accountNumber}
 POST /api/transactions/transfer
 ```
 
@@ -370,7 +404,7 @@ POST /api/transactions/transfer
 
 ```json
 {
-  "accountId": 1,
+  "accountNumber": "5312345678",
   "transactionType": "DEPOSIT",
   "amount": 50000
 }
@@ -380,7 +414,7 @@ POST /api/transactions/transfer
 
 ```json
 {
-  "accountId": 1,
+  "accountNumber": "5312345678",
   "transactionType": "WITHDRAWAL",
   "amount": 20000
 }
@@ -390,8 +424,8 @@ POST /api/transactions/transfer
 
 ```json
 {
-  "sourceAccountId": 1,
-  "destinationAccountId": 2,
+  "sourceAccountNumber": "5312345678",
+  "destinationAccountNumber": "3312345678",
   "amount": 50000
 }
 ```
@@ -489,11 +523,22 @@ Si ese puerto está ocupado puede utilizar otro puerto disponible.
 
 ## Docker
 
-El proyecto incluye:
+El proyecto incluye Docker para los tres componentes principales:
+
+```text
+Docker Compose
+├── bankapi-postgres   -> PostgreSQL
+├── bankapi-app        -> Spring Boot
+└── bankapi-frontend   -> React + Nginx
+```
+
+Archivos principales:
 
 ```text
 Dockerfile
 docker-compose.yml
+frontend/Dockerfile
+frontend/.dockerignore
 ```
 
 Para construir e iniciar los contenedores:
@@ -508,13 +553,21 @@ Para detenerlos:
 docker compose down
 ```
 
-La API se expone en:
+Servicios expuestos:
 
 ```text
-http://localhost:8080
+Frontend     -> http://localhost:5173
+Backend API  -> http://localhost:8080
+PostgreSQL   -> localhost:5433
 ```
 
-PostgreSQL se ejecuta dentro de Docker en el puerto `5432` y se expone al equipo mediante el puerto configurado en `docker-compose.yml`.
+Dentro de la red de Docker, Spring Boot se conecta a PostgreSQL mediante:
+
+```text
+jdbc:postgresql://postgres:5432/Bankapi
+```
+
+El frontend se construye con Node y se sirve en producción mediante Nginx.
 
 ## Git y GitHub
 

@@ -8,8 +8,8 @@ import java.util.List;
 public interface TransferMoneyUseCase {
 
     List<Transaction> transfer(
-            Long sourceAccountId,
-            Long destinationAccountId,
+            String sourceAccountNumber,
+            String destinationAccountNumber,
             BigDecimal amount
     );
 }

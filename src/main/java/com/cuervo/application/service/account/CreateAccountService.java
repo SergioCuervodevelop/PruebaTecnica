@@ -2,9 +2,11 @@ package com.cuervo.application.service.account;
 
 import com.cuervo.application.port.in.account.CreateAccountUseCase;
 import com.cuervo.domain.enums.AccountStatus;
+import com.cuervo.domain.enums.AccountType;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.exception.InvalidAccountStateException;
 import com.cuervo.domain.model.Account;
+import com.cuervo.domain.model.Client;
 import com.cuervo.domain.port.out.AccountNumberGeneratorPort;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
 import com.cuervo.domain.port.out.ClientRepositoryPort;
@@ -26,11 +28,17 @@ public class CreateAccountService implements CreateAccountUseCase {
     }
 
     @Override
-    public Account create(Account account) {
+    public Account create(AccountType accountType, String identificationNumber) {
 
-        clientRepositoryPort.findById(account.getClientId())
+        Client client = clientRepositoryPort.findByIdentificationNumber(identificationNumber)
                 .orElseThrow(() ->
                         new EntityNotFoundException("Client not found"));
+
+        Account account = new Account(
+                accountType,
+                null,
+                client.getId()
+        );
 
         boolean accountAlreadyExists =
                 accountRepositoryPort

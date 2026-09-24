@@ -15,7 +15,9 @@ public class GetClientService implements GetClientUseCase {
     }
 
     @Override
-    public Optional<Client> execute(Long id) {
-        return clientRepositoryPort.findById(id);
+    public Optional<Client> execute(String identificationNumber) {
+
+        return clientRepositoryPort
+                .findByIdentificationNumber(identificationNumber);
     }
 }

@@ -19,11 +19,16 @@ public class ChangeAccountStatusService
     }
 
     @Override
-    public Account change(Long id, AccountStatus status) {
+    public Account change(
+            String accountNumber,
+            AccountStatus status) {
 
-        Account account = accountRepositoryPort.findById(id)
+        Account account = accountRepositoryPort
+                .findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Account not found"));
+                        new EntityNotFoundException(
+                                "Account not found"
+                        ));
 
         if (status == null) {
             throw new InvalidAccountStateException(

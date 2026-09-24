@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getTransactionsByAccount } from "../services/api";
 
 function TransactionHistory() {
-  const [accountId, setAccountId] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,7 +47,7 @@ function TransactionHistory() {
   const handleSearch = async (event) => {
     event.preventDefault();
 
-    if (!accountId) {
+    if (!accountNumber.trim()) {
       return;
     }
 
@@ -57,9 +57,14 @@ function TransactionHistory() {
       setTransactions([]);
       setSearched(false);
 
-      const data = await getTransactionsByAccount(Number(accountId));
+      const data = await getTransactionsByAccount(
+        accountNumber.trim()
+      );
 
-      setTransactions(Array.isArray(data) ? data : []);
+      setTransactions(
+        Array.isArray(data) ? data : []
+      );
+
       setSearched(true);
     } catch (error) {
       console.error(error);
@@ -68,7 +73,8 @@ function TransactionHistory() {
       setSearched(true);
 
       setMessage(
-        error.message || "No se pudo consultar el historial de movimientos."
+        error.message ||
+          "No se pudo consultar el historial de movimientos."
       );
     } finally {
       setLoading(false);
@@ -81,24 +87,28 @@ function TransactionHistory() {
         <h2>Historial de movimientos</h2>
 
         <p>
-          Consulta los depósitos, retiros y transferencias registrados
-          en una cuenta.
+          Consulta los depósitos, retiros y
+          transferencias registrados en una cuenta.
         </p>
       </div>
 
-      <form className="history-search-form" onSubmit={handleSearch}>
+      <form
+        className="history-search-form"
+        onSubmit={handleSearch}
+      >
         <div className="search-input">
-          <label htmlFor="historyAccountId">
-            ID de la cuenta
+          <label htmlFor="historyAccountNumber">
+            Número de cuenta
           </label>
 
           <input
-            id="historyAccountId"
-            type="number"
-            min="1"
-            value={accountId}
-            onChange={(event) => setAccountId(event.target.value)}
-            placeholder="Ej. 1"
+            id="historyAccountNumber"
+            type="text"
+            value={accountNumber}
+            onChange={(event) =>
+              setAccountNumber(event.target.value)
+            }
+            placeholder="Ej. 5312345678"
             required
           />
         </div>
@@ -108,7 +118,9 @@ function TransactionHistory() {
           className="primary-button"
           disabled={loading}
         >
-          {loading ? "Consultando..." : "Consultar movimientos"}
+          {loading
+            ? "Consultando..."
+            : "Consultar movimientos"}
         </button>
       </form>
 
@@ -118,27 +130,32 @@ function TransactionHistory() {
         </div>
       )}
 
-      {searched && !message && transactions.length === 0 && (
-        <div className="empty-history">
-          <strong>Sin movimientos</strong>
+      {searched &&
+        !message &&
+        transactions.length === 0 && (
+          <div className="empty-history">
+            <strong>Sin movimientos</strong>
 
-          <p>
-            Esta cuenta todavía no tiene transacciones registradas.
-          </p>
-        </div>
-      )}
+            <p>
+              Esta cuenta todavía no tiene
+              transacciones registradas.
+            </p>
+          </div>
+        )}
 
       {transactions.length > 0 && (
         <>
           <div className="history-summary">
             <span>
               Cuenta consultada
-              <strong>#{accountId}</strong>
+              <strong>{accountNumber}</strong>
             </span>
 
             <span>
               Movimientos
-              <strong>{transactions.length}</strong>
+              <strong>
+                {transactions.length}
+              </strong>
             </span>
           </div>
 
@@ -146,8 +163,9 @@ function TransactionHistory() {
             <table className="clients-table history-table">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>Cuenta</th>
                   <th>Tipo</th>
+                  <th>Movimiento</th>
                   <th>Valor</th>
                   <th>Fecha</th>
                   <th>Transferencia</th>
@@ -155,46 +173,54 @@ function TransactionHistory() {
               </thead>
 
               <tbody>
-                {transactions.map((transaction, index) => (
-                  <tr
-                    key={
-                      transaction.id ??
-                      `${transaction.transactionType}-${index}`
-                    }
-                  >
-                    <td>
-                      {transaction.id ?? "-"}
-                    </td>
+                {transactions.map(
+                  (transaction, index) => (
+                    <tr
+                      key={`${transaction.transactionType}-${transaction.transactionDate}-${index}`}
+                    >
+                      <td>
+                        {transaction.accountNumber}
+                      </td>
 
-                    <td>
-                      <span
-                        className={`transaction-badge ${
-                          transaction.transactionType
-                            ?.toLowerCase()
-                        }`}
-                      >
-                        {getTransactionName(
-                          transaction.transactionType
+                      <td>
+                        <span
+                          className={`transaction-badge ${
+                            transaction.transactionType
+                              ?.toLowerCase()
+                          }`}
+                        >
+                          {getTransactionName(
+                            transaction.transactionType
+                          )}
+                        </span>
+                      </td>
+
+                      <td>
+                        {transaction.movementType ===
+                        "CREDIT"
+                          ? "Crédito"
+                          : "Débito"}
+                      </td>
+
+                      <td className="transaction-amount">
+                        {formatMoney(
+                          transaction.amount
                         )}
-                      </span>
-                    </td>
+                      </td>
 
-                    <td className="transaction-amount">
-                      {formatMoney(transaction.amount)}
-                    </td>
+                      <td>
+                        {formatDate(
+                          transaction.transactionDate
+                        )}
+                      </td>
 
-                    <td>
-                      {formatDate(
-                        transaction.createdAt ??
-                        transaction.transactionDate
-                      )}
-                    </td>
-
-                    <td className="transfer-id">
-                      {transaction.transferId || "-"}
-                    </td>
-                  </tr>
-                ))}
+                      <td className="transfer-id">
+                        {transaction.transferId ||
+                          "-"}
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>

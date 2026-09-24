@@ -3,7 +3,7 @@ import { createAccount } from "../services/api";
 
 function AccountForm({ onAccountCreated }) {
   const [formData, setFormData] = useState({
-    clientId: "",
+    identificationNumber: "",
     accountType: "SAVINGS",
   });
 
@@ -32,7 +32,7 @@ function AccountForm({ onAccountCreated }) {
     try {
       const account = await createAccount({
         accountType: formData.accountType,
-        clientId: Number(formData.clientId),
+        identificationNumber: formData.identificationNumber,
       });
 
       setCreatedAccount(account);
@@ -40,7 +40,7 @@ function AccountForm({ onAccountCreated }) {
       setMessageType("success");
 
       setFormData({
-        clientId: "",
+        identificationNumber: "",
         accountType: "SAVINGS",
       });
 
@@ -49,9 +49,12 @@ function AccountForm({ onAccountCreated }) {
       }
     } catch (error) {
       console.error(error);
+
       setMessage(
-        "No se pudo crear la cuenta. Verifica el cliente y los datos ingresados."
+        error.message ||
+          "No se pudo crear la cuenta. Verifica el cliente y los datos ingresados."
       );
+
       setMessageType("error");
     } finally {
       setLoading(false);
@@ -71,18 +74,17 @@ function AccountForm({ onAccountCreated }) {
       <form className="client-form" onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="form-group">
-            <label htmlFor="accountClientId">
-              ID del cliente
+            <label htmlFor="identificationNumber">
+              Número de identificación
             </label>
 
             <input
-              id="accountClientId"
-              name="clientId"
-              type="number"
-              min="1"
-              value={formData.clientId}
+              id="identificationNumber"
+              name="identificationNumber"
+              type="text"
+              value={formData.identificationNumber}
               onChange={handleChange}
-              placeholder="Ej. 2"
+              placeholder="Ej: 1075000000"
               required
             />
           </div>
@@ -132,7 +134,7 @@ function AccountForm({ onAccountCreated }) {
           <div className="client-result-header">
             <div>
               <span className="client-id">
-                Cuenta #{createdAccount.id}
+                Número de cuenta
               </span>
 
               <h3>
@@ -160,9 +162,9 @@ function AccountForm({ onAccountCreated }) {
               <span>Saldo</span>
 
               <strong>
-                ${Number(createdAccount.balance || 0).toLocaleString(
-                  "es-CO"
-                )}
+                ${Number(
+                  createdAccount.balance || 0
+                ).toLocaleString("es-CO")}
               </strong>
             </div>
 
@@ -170,8 +172,7 @@ function AccountForm({ onAccountCreated }) {
               <span>Saldo disponible</span>
 
               <strong>
-                $
-                {Number(
+                ${Number(
                   createdAccount.availableBalance || 0
                 ).toLocaleString("es-CO")}
               </strong>
@@ -181,7 +182,7 @@ function AccountForm({ onAccountCreated }) {
               <span>Cliente</span>
 
               <strong>
-                #{createdAccount.clientId}
+                {formData.identificationNumber || "Cliente registrado"}
               </strong>
             </div>
           </div>

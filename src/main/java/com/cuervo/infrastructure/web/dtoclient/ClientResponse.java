@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record ClientResponse(
-        Long id,
+
         IdentificationType identificationType,
         String identificationNumber,
         String firstName,
@@ -15,5 +15,6 @@ public record ClientResponse(
         LocalDate birthDate,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
+
 ) {
 }

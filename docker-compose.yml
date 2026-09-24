@@ -3,32 +3,58 @@ services:
   postgres:
     image: postgres:17
     container_name: bankapi-postgres
+
     environment:
       POSTGRES_DB: Bankapi
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+
     ports:
       - "5433:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d Bankapi"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+
     container_name: bankapi-app
+
     depends_on:
       postgres:
         condition: service_healthy
+
     ports:
       - "8080:8080"
+
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/Bankapi
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 1234
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: bankapi-frontend
+
+    depends_on:
+      - app
+
+    ports:
+      - "5173:80"
+
 
 volumes:
   postgres_data:

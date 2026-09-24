@@ -17,11 +17,14 @@ public class CancelAccountService
     }
 
     @Override
-    public Account cancel(Long id) {
+    public Account cancel(String accountNumber) {
 
-        Account account = accountRepositoryPort.findById(id)
+        Account account = accountRepositoryPort
+                .findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Account not found"));
+                        new EntityNotFoundException(
+                                "Account not found"
+                        ));
 
         account.cancel();
 

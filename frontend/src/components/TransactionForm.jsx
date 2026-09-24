@@ -8,9 +8,9 @@ function TransactionForm() {
   const [operation, setOperation] = useState("DEPOSIT");
 
   const [formData, setFormData] = useState({
-    accountId: "",
-    sourceAccountId: "",
-    destinationAccountId: "",
+    accountNumber: "",
+    sourceAccountNumber: "",
+    destinationAccountNumber: "",
     amount: "",
   });
 
@@ -33,9 +33,9 @@ function TransactionForm() {
     setMessageType("");
 
     setFormData({
-      accountId: "",
-      sourceAccountId: "",
-      destinationAccountId: "",
+      accountNumber: "",
+      sourceAccountNumber: "",
+      destinationAccountNumber: "",
       amount: "",
     });
   };
@@ -50,43 +50,55 @@ function TransactionForm() {
     try {
       if (operation === "TRANSFER") {
         await transferMoney({
-          sourceAccountId: Number(formData.sourceAccountId),
-          destinationAccountId: Number(
-            formData.destinationAccountId
-          ),
+          sourceAccountNumber:
+            formData.sourceAccountNumber.trim(),
+
+          destinationAccountNumber:
+            formData.destinationAccountNumber.trim(),
+
           amount: Number(formData.amount),
         });
 
-        setMessage("Transferencia realizada correctamente.");
+        setMessage(
+          "Transferencia realizada correctamente."
+        );
       } else {
         await createTransaction({
-          accountId: Number(formData.accountId),
+          accountNumber:
+            formData.accountNumber.trim(),
+
           transactionType: operation,
+
           amount: Number(formData.amount),
         });
 
         if (operation === "DEPOSIT") {
-          setMessage("Depósito realizado correctamente.");
+          setMessage(
+            "Depósito realizado correctamente."
+          );
         }
 
         if (operation === "WITHDRAWAL") {
-          setMessage("Retiro realizado correctamente.");
+          setMessage(
+            "Retiro realizado correctamente."
+          );
         }
       }
 
       setMessageType("success");
 
       setFormData({
-        accountId: "",
-        sourceAccountId: "",
-        destinationAccountId: "",
+        accountNumber: "",
+        sourceAccountNumber: "",
+        destinationAccountNumber: "",
         amount: "",
       });
     } catch (error) {
       console.error(error);
 
       setMessage(
-        error.message || "No se pudo realizar la operación."
+        error.message ||
+          "No se pudo realizar la operación."
       );
 
       setMessageType("error");
@@ -101,11 +113,15 @@ function TransactionForm() {
         <h2>Realizar transacción</h2>
 
         <p>
-          Realiza depósitos, retiros y transferencias entre cuentas.
+          Realiza depósitos, retiros y transferencias
+          entre cuentas.
         </p>
       </div>
 
-      <form className="client-form" onSubmit={handleSubmit}>
+      <form
+        className="client-form"
+        onSubmit={handleSubmit}
+      >
         <div className="form-grid">
           <div className="form-group">
             <label htmlFor="operation">
@@ -133,18 +149,17 @@ function TransactionForm() {
 
           {operation !== "TRANSFER" && (
             <div className="form-group">
-              <label htmlFor="transactionAccountId">
-                ID de la cuenta
+              <label htmlFor="accountNumber">
+                Número de cuenta
               </label>
 
               <input
-                id="transactionAccountId"
-                name="accountId"
-                type="number"
-                min="1"
-                value={formData.accountId}
+                id="accountNumber"
+                name="accountNumber"
+                type="text"
+                value={formData.accountNumber}
                 onChange={handleChange}
-                placeholder="Ej. 1"
+                placeholder="Ej. 5312345678"
                 required
               />
             </div>
@@ -153,35 +168,37 @@ function TransactionForm() {
           {operation === "TRANSFER" && (
             <>
               <div className="form-group">
-                <label htmlFor="sourceAccountId">
+                <label htmlFor="sourceAccountNumber">
                   Cuenta de origen
                 </label>
 
                 <input
-                  id="sourceAccountId"
-                  name="sourceAccountId"
-                  type="number"
-                  min="1"
-                  value={formData.sourceAccountId}
+                  id="sourceAccountNumber"
+                  name="sourceAccountNumber"
+                  type="text"
+                  value={
+                    formData.sourceAccountNumber
+                  }
                   onChange={handleChange}
-                  placeholder="ID de la cuenta origen"
+                  placeholder="Número de cuenta origen"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="destinationAccountId">
+                <label htmlFor="destinationAccountNumber">
                   Cuenta de destino
                 </label>
 
                 <input
-                  id="destinationAccountId"
-                  name="destinationAccountId"
-                  type="number"
-                  min="1"
-                  value={formData.destinationAccountId}
+                  id="destinationAccountNumber"
+                  name="destinationAccountNumber"
+                  type="text"
+                  value={
+                    formData.destinationAccountNumber
+                  }
                   onChange={handleChange}
-                  placeholder="ID de la cuenta destino"
+                  placeholder="Número de cuenta destino"
                   required
                 />
               </div>
@@ -208,7 +225,9 @@ function TransactionForm() {
         </div>
 
         {message && (
-          <div className={`form-message ${messageType}`}>
+          <div
+            className={`form-message ${messageType}`}
+          >
             {message}
           </div>
         )}

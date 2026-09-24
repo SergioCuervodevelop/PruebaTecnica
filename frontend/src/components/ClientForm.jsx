@@ -60,10 +60,15 @@ function ClientForm({ onClientCreated }) {
   return (
     <div className="client-form-container">
       <div className="form-header">
-        <p>Registra un nuevo cliente en el sistema financiero.</p>
+        <p>
+          Registra un nuevo cliente en el sistema financiero.
+        </p>
       </div>
 
-      <form className="client-form" onSubmit={handleSubmit}>
+      <form
+        className="client-form"
+        onSubmit={handleSubmit}
+      >
         <div className="form-grid">
           <div className="form-group">
             <label htmlFor="identificationType">
@@ -77,10 +82,17 @@ function ClientForm({ onClientCreated }) {
               onChange={handleChange}
               required
             >
-              <option value="CC">Cédula de ciudadanía</option>
-              <option value="TI">Tarjeta de identidad</option>
-              <option value="PA">Pasaporte</option>
-              <option value="CE">Cédula de extranjería</option>
+              <option value="CC">
+                Cédula de ciudadanía
+              </option>
+
+              <option value="PA">
+                Pasaporte
+              </option>
+
+              <option value="CE">
+                Cédula de extranjería
+              </option>
             </select>
           </div>
 
@@ -101,7 +113,9 @@ function ClientForm({ onClientCreated }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="firstName">Nombres</label>
+            <label htmlFor="firstName">
+              Nombres
+            </label>
 
             <input
               id="firstName"
@@ -116,7 +130,9 @@ function ClientForm({ onClientCreated }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="lastName">Apellidos</label>
+            <label htmlFor="lastName">
+              Apellidos
+            </label>
 
             <input
               id="lastName"
@@ -131,7 +147,9 @@ function ClientForm({ onClientCreated }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="email">
+              Correo electrónico
+            </label>
 
             <input
               id="email"
@@ -144,7 +162,9 @@ function ClientForm({ onClientCreated }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="birthDate">Fecha de nacimiento</label>
+            <label htmlFor="birthDate">
+              Fecha de nacimiento
+            </label>
 
             <input
               id="birthDate"
@@ -158,7 +178,9 @@ function ClientForm({ onClientCreated }) {
         </div>
 
         {message && (
-          <div className={`form-message ${messageType}`}>
+          <div
+            className={`form-message ${messageType}`}
+          >
             {message}
           </div>
         )}
@@ -169,7 +191,9 @@ function ClientForm({ onClientCreated }) {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Creando..." : "Crear cliente"}
+            {loading
+              ? "Creando..."
+              : "Crear cliente"}
           </button>
         </div>
       </form>

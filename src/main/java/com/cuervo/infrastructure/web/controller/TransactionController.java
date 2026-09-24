@@ -41,27 +41,38 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> create(
             @Valid @RequestBody CreateTransactionRequest request) {
 
-        Transaction transaction =
-                transactionWebMapper.toDomain(request);
-
         Transaction created =
-                createTransactionUseCase.execute(transaction);
+                createTransactionUseCase.execute(
+                        request.accountNumber(),
+                        request.transactionType(),
+                        request.amount()
+                );
+
+        TransactionResponse response =
+                transactionWebMapper.toResponse(
+                        created,
+                        request.accountNumber()
+                );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(transactionWebMapper.toResponse(created));
+                .body(response);
     }
 
-    @GetMapping("/account/{accountId}")
+    @GetMapping("/account/{accountNumber}")
     public ResponseEntity<List<TransactionResponse>> getByAccount(
-            @PathVariable Long accountId
+            @PathVariable String accountNumber
     ) {
 
         List<TransactionResponse> response =
                 getTransactionsByAccountUseCase
-                        .execute(accountId)
+                        .execute(accountNumber)
                         .stream()
-                        .map(transactionWebMapper::toResponse)
+                        .map(transaction ->
+                                transactionWebMapper.toResponse(
+                                        transaction,
+                                        accountNumber
+                                ))
                         .toList();
 
         return ResponseEntity.ok(response);
@@ -73,15 +84,28 @@ public class TransactionController {
 
         List<Transaction> transactions =
                 transferMoneyUseCase.transfer(
-                        request.sourceAccountId(),
-                        request.destinationAccountId(),
+                        request.sourceAccountNumber(),
+                        request.destinationAccountNumber(),
                         request.amount()
                 );
 
+        TransactionResponse debitResponse =
+                transactionWebMapper.toResponse(
+                        transactions.get(0),
+                        request.sourceAccountNumber()
+                );
+
+        TransactionResponse creditResponse =
+                transactionWebMapper.toResponse(
+                        transactions.get(1),
+                        request.destinationAccountNumber()
+                );
+
         List<TransactionResponse> response =
-                transactions.stream()
-                        .map(transactionWebMapper::toResponse)
-                        .toList();
+                List.of(
+                        debitResponse,
+                        creditResponse
+                );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

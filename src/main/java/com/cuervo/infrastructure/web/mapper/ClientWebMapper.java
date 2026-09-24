@@ -43,7 +43,6 @@ public class ClientWebMapper {
         }
 
         return new ClientResponse(
-                client.getId(),
                 client.getIdentificationType(),
                 client.getIdentificationNumber(),
                 client.getFirstName(),

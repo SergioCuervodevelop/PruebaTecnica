@@ -9,9 +9,13 @@ public interface ClientRepositoryPort {
 
     Client save(Client client);
 
-    Optional<Client> findById(Long id);
+    Optional<Client> findByIdentificationNumber(
+            String identificationNumber
+    );
 
     List<Client> findAll();
 
-    void deleteById(Long id);
+    void deleteByIdentificationNumber(
+            String identificationNumber
+    );
 }

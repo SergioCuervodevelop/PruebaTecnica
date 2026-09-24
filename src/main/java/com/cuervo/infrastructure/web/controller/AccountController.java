@@ -38,10 +38,8 @@ public class AccountController {
 
         this.createAccountUseCase = createAccountUseCase;
         this.getAccountUseCase = getAccountUseCase;
-        this.getAccountsByClientUseCase =
-                getAccountsByClientUseCase;
-        this.changeAccountStatusUseCase =
-                changeAccountStatusUseCase;
+        this.getAccountsByClientUseCase = getAccountsByClientUseCase;
+        this.changeAccountStatusUseCase = changeAccountStatusUseCase;
         this.cancelAccountUseCase = cancelAccountUseCase;
         this.accountWebMapper = accountWebMapper;
     }
@@ -50,11 +48,11 @@ public class AccountController {
     public ResponseEntity<AccountResponse> createAccount(
             @Valid @RequestBody CreateAccountRequest request) {
 
-        Account account =
-                accountWebMapper.toDomain(request);
-
         Account createdAccount =
-                createAccountUseCase.create(account);
+                createAccountUseCase.create(
+                        request.accountType(),
+                        request.identificationNumber()
+                );
 
         AccountResponse response =
                 accountWebMapper.toResponse(createdAccount);
@@ -64,12 +62,13 @@ public class AccountController {
                 .body(response);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{accountNumber}")
     public ResponseEntity<AccountResponse> getAccount(
-            @PathVariable Long id) {
+            @PathVariable String accountNumber) {
 
         Account account =
-                getAccountUseCase.getById(id);
+                getAccountUseCase
+                        .getByAccountNumber(accountNumber);
 
         AccountResponse response =
                 accountWebMapper.toResponse(account);
@@ -77,13 +76,15 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/client/{clientId}")
+    @GetMapping("/client/{identificationNumber}")
     public ResponseEntity<List<AccountResponse>> getAccountsByClient(
-            @PathVariable Long clientId) {
+            @PathVariable String identificationNumber) {
 
         List<AccountResponse> response =
                 getAccountsByClientUseCase
-                        .getByClientId(clientId)
+                        .getByIdentificationNumber(
+                                identificationNumber
+                        )
                         .stream()
                         .map(accountWebMapper::toResponse)
                         .toList();
@@ -91,25 +92,27 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{accountNumber}/status")
     public ResponseEntity<AccountResponse> changeStatus(
-            @PathVariable Long id,
+            @PathVariable String accountNumber,
             @RequestParam AccountStatus status) {
 
         Account account =
-                changeAccountStatusUseCase.change(id, status);
+                changeAccountStatusUseCase
+                        .change(accountNumber, status);
 
         return ResponseEntity.ok(
                 accountWebMapper.toResponse(account)
         );
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{accountNumber}")
     public ResponseEntity<AccountResponse> cancelAccount(
-            @PathVariable Long id) {
+            @PathVariable String accountNumber) {
 
         Account account =
-                cancelAccountUseCase.cancel(id);
+                cancelAccountUseCase
+                        .cancel(accountNumber);
 
         return ResponseEntity.ok(
                 accountWebMapper.toResponse(account)

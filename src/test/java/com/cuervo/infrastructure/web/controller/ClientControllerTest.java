@@ -8,7 +8,6 @@ import com.cuervo.infrastructure.web.mapper.ClientWebMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,9 +49,14 @@ class ClientControllerTest {
         CreateClientRequest request =
                 mock(CreateClientRequest.class);
 
-        Client client = mock(Client.class);
-        Client createdClient = mock(Client.class);
-        ClientResponse response = mock(ClientResponse.class);
+        Client client =
+                mock(Client.class);
+
+        Client createdClient =
+                mock(Client.class);
+
+        ClientResponse response =
+                mock(ClientResponse.class);
 
         when(clientWebMapper.toDomain(request))
                 .thenReturn(client);
@@ -66,8 +70,24 @@ class ClientControllerTest {
         ResponseEntity<ClientResponse> result =
                 controller.createClient(request);
 
-        assertEquals(201, result.getStatusCode().value());
-        assertEquals(response, result.getBody());
+        assertEquals(
+                201,
+                result.getStatusCode().value()
+        );
+
+        assertEquals(
+                response,
+                result.getBody()
+        );
+
+        verify(clientWebMapper)
+                .toDomain(request);
+
+        verify(createClientUseCase)
+                .execute(client);
+
+        verify(clientWebMapper)
+                .toResponse(createdClient);
     }
 
     @Test
@@ -101,19 +121,45 @@ class ClientControllerTest {
                         clientWebMapper
                 );
 
-        Client client = mock(Client.class);
-        ClientResponse response = mock(ClientResponse.class);
+        Client client =
+                mock(Client.class);
 
-        when(getClientUseCase.execute(1L))
-                .thenReturn(Optional.of(client));
+        ClientResponse response =
+                mock(ClientResponse.class);
+
+        String identificationNumber =
+                "1075000000";
+
+        when(getClientUseCase.execute(
+                identificationNumber
+        )).thenReturn(
+                Optional.of(client)
+        );
 
         when(clientWebMapper.toResponse(client))
                 .thenReturn(response);
 
         ResponseEntity<ClientResponse> result =
-                controller.getClient(1L);
+                controller.getClient(
+                        identificationNumber
+                );
 
-        assertEquals(200, result.getStatusCode().value());
-        assertEquals(response, result.getBody());
+        assertEquals(
+                200,
+                result.getStatusCode().value()
+        );
+
+        assertEquals(
+                response,
+                result.getBody()
+        );
+
+        verify(getClientUseCase)
+                .execute(
+                        identificationNumber
+                );
+
+        verify(clientWebMapper)
+                .toResponse(client);
     }
 }

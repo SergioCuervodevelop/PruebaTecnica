@@ -25,28 +25,35 @@ public class GetClientSummaryService implements GetClientSummaryUseCase {
     @Override
     public ClientSummaryResponse execute() {
 
-        List<Client> clients = clientRepositoryPort.findAll();
+        List<Client> clients =
+                clientRepositoryPort.findAll();
 
-        List<ClientAccountSummary> clientSummaries = clients.stream()
-                .map(client -> {
+        List<ClientAccountSummary> clientSummaries =
+                clients.stream()
+                        .map(client -> {
 
-                    int accountCount =
-                            accountRepositoryPort
-                                    .findByClientId(client.getId())
-                                    .size();
+                            int accountCount =
+                                    accountRepositoryPort
+                                            .findByClientId(
+                                                    client.getId()
+                                            )
+                                            .size();
 
-                    return new ClientAccountSummary(
-                            client.getId(),
-                            client.getFirstName(),
-                            client.getLastName(),
-                            accountCount
-                    );
-                })
-                .toList();
+                            return new ClientAccountSummary(
+                                    client.getIdentificationNumber(),
+                                    client.getFirstName(),
+                                    client.getLastName(),
+                                    accountCount
+                            );
+                        })
+                        .toList();
 
-        int totalAccounts = clientSummaries.stream()
-                .mapToInt(ClientAccountSummary::accountCount)
-                .sum();
+        int totalAccounts =
+                clientSummaries.stream()
+                        .mapToInt(
+                                ClientAccountSummary::accountCount
+                        )
+                        .sum();
 
         return new ClientSummaryResponse(
                 clients.size(),

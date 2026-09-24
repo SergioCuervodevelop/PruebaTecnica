@@ -14,8 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CreateTransactionServiceTest {
@@ -41,21 +40,23 @@ class CreateTransactionServiceTest {
                 1L
         );
 
-        Transaction transaction = new Transaction(
-                TransactionType.DEPOSIT,
-                MovementType.CREDIT,
-                new BigDecimal("20000"),
-                1L,
-                null
-        );
+        account.setId(1L);
 
-        when(accountRepositoryPort.findById(1L))
+        when(accountRepositoryPort
+                .findByAccountNumber("5312345678"))
                 .thenReturn(Optional.of(account));
 
-        when(transactionRepositoryPort.save(transaction))
-                .thenReturn(transaction);
+        when(transactionRepositoryPort
+                .save(any(Transaction.class)))
+                .thenAnswer(invocation ->
+                        invocation.getArgument(0)
+                );
 
-        Transaction result = service.execute(transaction);
+        Transaction result = service.execute(
+                "5312345678",
+                TransactionType.DEPOSIT,
+                new BigDecimal("20000")
+        );
 
         assertEquals(
                 new BigDecimal("20000"),
@@ -67,10 +68,33 @@ class CreateTransactionServiceTest {
                 account.getAvailableBalance()
         );
 
-        assertEquals(transaction, result);
+        assertEquals(
+                TransactionType.DEPOSIT,
+                result.getTransactionType()
+        );
 
-        verify(accountRepositoryPort).save(account);
-        verify(transactionRepositoryPort).save(transaction);
+        assertEquals(
+                MovementType.CREDIT,
+                result.getMovementType()
+        );
+
+        assertEquals(
+                new BigDecimal("20000"),
+                result.getAmount()
+        );
+
+        assertEquals(
+                1L,
+                result.getAccountId()
+        );
+
+        assertNull(result.getTransferId());
+
+        verify(accountRepositoryPort)
+                .save(account);
+
+        verify(transactionRepositoryPort)
+                .save(any(Transaction.class));
     }
 
     @Test
@@ -94,23 +118,27 @@ class CreateTransactionServiceTest {
                 1L
         );
 
-        account.deposit(new BigDecimal("50000"));
+        account.setId(1L);
 
-        Transaction transaction = new Transaction(
-                TransactionType.WITHDRAWAL,
-                MovementType.DEBIT,
-                new BigDecimal("20000"),
-                1L,
-                null
+        account.deposit(
+                new BigDecimal("50000")
         );
 
-        when(accountRepositoryPort.findById(1L))
+        when(accountRepositoryPort
+                .findByAccountNumber("5312345678"))
                 .thenReturn(Optional.of(account));
 
-        when(transactionRepositoryPort.save(transaction))
-                .thenReturn(transaction);
+        when(transactionRepositoryPort
+                .save(any(Transaction.class)))
+                .thenAnswer(invocation ->
+                        invocation.getArgument(0)
+                );
 
-        service.execute(transaction);
+        Transaction result = service.execute(
+                "5312345678",
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("20000")
+        );
 
         assertEquals(
                 new BigDecimal("30000"),
@@ -121,6 +149,32 @@ class CreateTransactionServiceTest {
                 new BigDecimal("30000"),
                 account.getAvailableBalance()
         );
+
+        assertEquals(
+                TransactionType.WITHDRAWAL,
+                result.getTransactionType()
+        );
+
+        assertEquals(
+                MovementType.DEBIT,
+                result.getMovementType()
+        );
+
+        assertEquals(
+                new BigDecimal("20000"),
+                result.getAmount()
+        );
+
+        assertEquals(
+                1L,
+                result.getAccountId()
+        );
+
+        verify(accountRepositoryPort)
+                .save(account);
+
+        verify(transactionRepositoryPort)
+                .save(any(Transaction.class));
     }
 
     @Test
@@ -144,28 +198,37 @@ class CreateTransactionServiceTest {
                 1L
         );
 
-        account.deposit(new BigDecimal("10000"));
+        account.setId(1L);
 
-        Transaction transaction = new Transaction(
-                TransactionType.WITHDRAWAL,
-                MovementType.DEBIT,
-                new BigDecimal("50000"),
-                1L,
-                null
+        account.deposit(
+                new BigDecimal("10000")
         );
 
-        when(accountRepositoryPort.findById(1L))
+        when(accountRepositoryPort
+                .findByAccountNumber("5312345678"))
                 .thenReturn(Optional.of(account));
 
         assertThrows(
                 InsufficientBalanceException.class,
-                () -> service.execute(transaction)
+                () -> service.execute(
+                        "5312345678",
+                        TransactionType.WITHDRAWAL,
+                        new BigDecimal("50000")
+                )
         );
 
         assertEquals(
                 new BigDecimal("10000"),
                 account.getBalance()
         );
+
+        assertEquals(
+                new BigDecimal("10000"),
+                account.getAvailableBalance()
+        );
+
+        verify(accountRepositoryPort, never())
+                .save(any(Account.class));
 
         verify(transactionRepositoryPort, never())
                 .save(any(Transaction.class));
@@ -192,20 +255,19 @@ class CreateTransactionServiceTest {
                 1L
         );
 
-        Transaction transaction = new Transaction(
-                TransactionType.TRANSFER,
-                MovementType.DEBIT,
-                new BigDecimal("20000"),
-                1L,
-                null
-        );
+        account.setId(1L);
 
-        when(accountRepositoryPort.findById(1L))
+        when(accountRepositoryPort
+                .findByAccountNumber("5312345678"))
                 .thenReturn(Optional.of(account));
 
         assertThrows(
                 InvalidTransferException.class,
-                () -> service.execute(transaction)
+                () -> service.execute(
+                        "5312345678",
+                        TransactionType.TRANSFER,
+                        new BigDecimal("20000")
+                )
         );
 
         verify(accountRepositoryPort, never())

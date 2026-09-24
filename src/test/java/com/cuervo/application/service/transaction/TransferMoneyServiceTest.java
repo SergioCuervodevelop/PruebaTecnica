@@ -2,23 +2,22 @@ package com.cuervo.application.service.transaction;
 
 import com.cuervo.domain.enums.AccountType;
 import com.cuervo.domain.enums.MovementType;
+import com.cuervo.domain.enums.TransactionType;
+import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.exception.InvalidTransferException;
 import com.cuervo.domain.model.Account;
 import com.cuervo.domain.model.Transaction;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
 import com.cuervo.domain.port.out.TransactionRepositoryPort;
 import org.junit.jupiter.api.Test;
-import com.cuervo.domain.exception.EntityNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class TransferMoneyServiceTest {
 
@@ -40,11 +39,14 @@ class TransferMoneyServiceTest {
         assertThrows(
                 InvalidTransferException.class,
                 () -> service.transfer(
-                        1L,
-                        1L,
+                        "5312345678",
+                        "5312345678",
                         new BigDecimal("10000")
                 )
         );
+
+        verifyNoInteractions(accountRepositoryPort);
+        verifyNoInteractions(transactionRepositoryPort);
     }
 
     @Test
@@ -68,28 +70,40 @@ class TransferMoneyServiceTest {
                 1L
         );
 
+        sourceAccount.setId(1L);
+
         Account destinationAccount = new Account(
                 AccountType.CHECKING,
                 "3312345678",
                 2L
         );
 
-        sourceAccount.deposit(new BigDecimal("100000"));
+        destinationAccount.setId(2L);
 
-        when(accountRepositoryPort.findById(1L))
+        sourceAccount.deposit(
+                new BigDecimal("100000")
+        );
+
+        when(accountRepositoryPort
+                .findByAccountNumber("5312345678"))
                 .thenReturn(Optional.of(sourceAccount));
 
-        when(accountRepositoryPort.findById(2L))
+        when(accountRepositoryPort
+                .findByAccountNumber("3312345678"))
                 .thenReturn(Optional.of(destinationAccount));
 
-        when(transactionRepositoryPort.save(any(Transaction.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepositoryPort
+                .save(any(Transaction.class)))
+                .thenAnswer(invocation ->
+                        invocation.getArgument(0)
+                );
 
-        List<Transaction> result = service.transfer(
-                1L,
-                2L,
-                new BigDecimal("30000")
-        );
+        List<Transaction> result =
+                service.transfer(
+                        "5312345678",
+                        "3312345678",
+                        new BigDecimal("30000")
+                );
 
         assertEquals(
                 new BigDecimal("70000"),
@@ -103,20 +117,64 @@ class TransferMoneyServiceTest {
 
         assertEquals(2, result.size());
 
+        Transaction debit = result.get(0);
+        Transaction credit = result.get(1);
+
+        assertEquals(
+                TransactionType.TRANSFER,
+                debit.getTransactionType()
+        );
+
+        assertEquals(
+                TransactionType.TRANSFER,
+                credit.getTransactionType()
+        );
+
         assertEquals(
                 MovementType.DEBIT,
-                result.get(0).getMovementType()
+                debit.getMovementType()
         );
 
         assertEquals(
                 MovementType.CREDIT,
-                result.get(1).getMovementType()
+                credit.getMovementType()
         );
 
         assertEquals(
-                result.get(0).getTransferId(),
-                result.get(1).getTransferId()
+                new BigDecimal("30000"),
+                debit.getAmount()
         );
+
+        assertEquals(
+                new BigDecimal("30000"),
+                credit.getAmount()
+        );
+
+        assertEquals(
+                1L,
+                debit.getAccountId()
+        );
+
+        assertEquals(
+                2L,
+                credit.getAccountId()
+        );
+
+        assertNotNull(debit.getTransferId());
+
+        assertEquals(
+                debit.getTransferId(),
+                credit.getTransferId()
+        );
+
+        verify(accountRepositoryPort)
+                .save(sourceAccount);
+
+        verify(accountRepositoryPort)
+                .save(destinationAccount);
+
+        verify(transactionRepositoryPort, times(2))
+                .save(any(Transaction.class));
     }
 
     @Test
@@ -134,16 +192,79 @@ class TransferMoneyServiceTest {
                         transactionRepositoryPort
                 );
 
-        when(accountRepositoryPort.findById(99L))
+        when(accountRepositoryPort
+                .findByAccountNumber("5399999999"))
                 .thenReturn(Optional.empty());
 
         assertThrows(
                 EntityNotFoundException.class,
                 () -> service.transfer(
-                        99L,
-                        2L,
+                        "5399999999",
+                        "3312345678",
                         new BigDecimal("10000")
                 )
         );
+
+        verify(accountRepositoryPort, never())
+                .save(any(Account.class));
+
+        verify(transactionRepositoryPort, never())
+                .save(any(Transaction.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDestinationAccountDoesNotExist() {
+
+        AccountRepositoryPort accountRepositoryPort =
+                mock(AccountRepositoryPort.class);
+
+        TransactionRepositoryPort transactionRepositoryPort =
+                mock(TransactionRepositoryPort.class);
+
+        TransferMoneyService service =
+                new TransferMoneyService(
+                        accountRepositoryPort,
+                        transactionRepositoryPort
+                );
+
+        Account sourceAccount = new Account(
+                AccountType.SAVINGS,
+                "5312345678",
+                1L
+        );
+
+        sourceAccount.setId(1L);
+
+        sourceAccount.deposit(
+                new BigDecimal("100000")
+        );
+
+        when(accountRepositoryPort
+                .findByAccountNumber("5312345678"))
+                .thenReturn(Optional.of(sourceAccount));
+
+        when(accountRepositoryPort
+                .findByAccountNumber("3399999999"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                EntityNotFoundException.class,
+                () -> service.transfer(
+                        "5312345678",
+                        "3399999999",
+                        new BigDecimal("10000")
+                )
+        );
+
+        assertEquals(
+                new BigDecimal("100000"),
+                sourceAccount.getBalance()
+        );
+
+        verify(accountRepositoryPort, never())
+                .save(any(Account.class));
+
+        verify(transactionRepositoryPort, never())
+                .save(any(Transaction.class));
     }
 }
