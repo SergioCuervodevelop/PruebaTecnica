@@ -3,6 +3,7 @@ import {
   getAccountByNumber,
   changeAccountStatus,
   cancelAccount,
+  restoreAccount,
 } from "../services/api";
 
 function AccountSearch() {
@@ -111,6 +112,44 @@ function AccountSearch() {
       setError(
         error.message ||
           "No se pudo cancelar la cuenta. Verifica que su saldo sea $0."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!account) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `¿Deseas restaurar la cuenta ${account.accountNumber}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const updatedAccount =
+        await restoreAccount(account.accountNumber);
+
+      setAccount(updatedAccount);
+
+      setMessage(
+        "Cuenta restaurada correctamente."
+      );
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        error.message ||
+          "No se pudo restaurar la cuenta."
       );
     } finally {
       setLoading(false);
@@ -269,49 +308,70 @@ function AccountSearch() {
             </div>
           </div>
 
-          {account.status !== "CANCELLED" && (
-            <div className="client-actions">
-              {account.status === "ACTIVE" && (
+          <div className="client-actions">
+
+            {account.status === "ACTIVE" && (
+              <>
                 <button
                   type="button"
                   className="secondary-button"
                   onClick={() =>
-                    handleStatusChange(
-                      "INACTIVE"
-                    )
+                    handleStatusChange("INACTIVE")
                   }
                   disabled={loading}
                 >
                   Inactivar
                 </button>
-              )}
 
-              {account.status ===
-                "INACTIVE" && (
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={handleCancel}
+                  disabled={loading}
+                >
+                  Cancelar cuenta
+                </button>
+              </>
+            )}
+
+            {account.status === "INACTIVE" && (
+              <>
                 <button
                   type="button"
                   className="primary-button"
                   onClick={() =>
-                    handleStatusChange(
-                      "ACTIVE"
-                    )
+                    handleStatusChange("ACTIVE")
                   }
                   disabled={loading}
                 >
                   Activar
                 </button>
-              )}
 
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={handleCancel}
+                  disabled={loading}
+                >
+                  Cancelar cuenta
+                </button>
+              </>
+            )}
+
+            {account.status === "CANCELLED" && (
               <button
                 type="button"
-                className="danger-button"
-                onClick={handleCancel}
+                className="primary-button"
+                onClick={handleRestore}
                 disabled={loading}
               >
-                Cancelar cuenta
+                {loading
+                  ? "Restaurando..."
+                  : "Restaurar cuenta"}
               </button>
-            </div>
-          )}
+            )}
+
+          </div>
         </div>
       )}
     </div>

@@ -90,6 +90,32 @@ export async function deleteClient(
   }
 }
 
+export async function restoreClient(
+  identificationType,
+  identificationNumber
+) {
+  const response = await fetch(
+    `${API_URL}/clients/${encodeURIComponent(
+      identificationType
+    )}/${encodeURIComponent(
+      identificationNumber
+    )}/restore`,
+    {
+      method: "PATCH",
+    }
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+
+    throw new Error(
+      message || "No se pudo restaurar el cliente"
+    );
+  }
+
+  return response.json();
+}
+
 export async function createAccount(account) {
   const response = await fetch(`${API_URL}/accounts`, {
     method: "POST",
@@ -181,6 +207,27 @@ export async function cancelAccount(accountNumber) {
   return response.json();
 }
 
+export async function restoreAccount(accountNumber) {
+  const response = await fetch(
+    `${API_URL}/accounts/${encodeURIComponent(
+      accountNumber
+    )}/restore`,
+    {
+      method: "PATCH",
+    }
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+
+    throw new Error(
+      message || "No se pudo restaurar la cuenta"
+    );
+  }
+
+  return response.json();
+}
+
 export async function createTransaction(transaction) {
   const response = await fetch(`${API_URL}/transactions`, {
     method: "POST",
@@ -240,3 +287,4 @@ export async function getTransactionsByAccount(
 
   return response.json();
 }
+

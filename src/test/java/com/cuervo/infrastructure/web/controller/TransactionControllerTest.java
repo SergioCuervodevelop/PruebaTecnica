@@ -5,10 +5,10 @@ import com.cuervo.application.port.in.transaction.GetTransactionsByAccountUseCas
 import com.cuervo.application.port.in.transaction.TransferMoneyUseCase;
 import com.cuervo.domain.enums.TransactionType;
 import com.cuervo.domain.model.Transaction;
+import com.cuervo.infrastructure.persistence.mapper.TransactionMapper;
 import com.cuervo.infrastructure.web.dtotransaction.CreateTransactionRequest;
 import com.cuervo.infrastructure.web.dtotransaction.TransactionResponse;
 import com.cuervo.infrastructure.web.dtotransaction.TransferMoneyRequest;
-import com.cuervo.infrastructure.web.mapper.TransactionWebMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
@@ -32,15 +32,15 @@ class TransactionControllerTest {
         TransferMoneyUseCase transferMoneyUseCase =
                 mock(TransferMoneyUseCase.class);
 
-        TransactionWebMapper transactionWebMapper =
-                mock(TransactionWebMapper.class);
+        TransactionMapper transactionMapper =
+                mock(TransactionMapper.class);
 
         TransactionController controller =
                 new TransactionController(
                         createTransactionUseCase,
                         getTransactionsByAccountUseCase,
                         transferMoneyUseCase,
-                        transactionWebMapper
+                        transactionMapper
                 );
 
         CreateTransactionRequest request =
@@ -62,7 +62,7 @@ class TransactionControllerTest {
                 new BigDecimal("10000")
         )).thenReturn(createdTransaction);
 
-        when(transactionWebMapper.toResponse(
+        when(transactionMapper.toResponse(
                 createdTransaction,
                 "5312345678"
         )).thenReturn(response);
@@ -86,7 +86,7 @@ class TransactionControllerTest {
                 new BigDecimal("10000")
         );
 
-        verify(transactionWebMapper).toResponse(
+        verify(transactionMapper).toResponse(
                 createdTransaction,
                 "5312345678"
         );
@@ -104,15 +104,15 @@ class TransactionControllerTest {
         TransferMoneyUseCase transferMoneyUseCase =
                 mock(TransferMoneyUseCase.class);
 
-        TransactionWebMapper transactionWebMapper =
-                mock(TransactionWebMapper.class);
+        TransactionMapper transactionMapper =
+                mock(TransactionMapper.class);
 
         TransactionController controller =
                 new TransactionController(
                         createTransactionUseCase,
                         getTransactionsByAccountUseCase,
                         transferMoneyUseCase,
-                        transactionWebMapper
+                        transactionMapper
                 );
 
         Transaction transaction1 =
@@ -136,12 +136,12 @@ class TransactionControllerTest {
                 )
         );
 
-        when(transactionWebMapper.toResponse(
+        when(transactionMapper.toResponse(
                 transaction1,
                 "5312345678"
         )).thenReturn(response1);
 
-        when(transactionWebMapper.toResponse(
+        when(transactionMapper.toResponse(
                 transaction2,
                 "5312345678"
         )).thenReturn(response2);
@@ -173,6 +173,16 @@ class TransactionControllerTest {
 
         verify(getTransactionsByAccountUseCase)
                 .execute("5312345678");
+
+        verify(transactionMapper).toResponse(
+                transaction1,
+                "5312345678"
+        );
+
+        verify(transactionMapper).toResponse(
+                transaction2,
+                "5312345678"
+        );
     }
 
     @Test
@@ -187,15 +197,15 @@ class TransactionControllerTest {
         TransferMoneyUseCase transferMoneyUseCase =
                 mock(TransferMoneyUseCase.class);
 
-        TransactionWebMapper transactionWebMapper =
-                mock(TransactionWebMapper.class);
+        TransactionMapper transactionMapper =
+                mock(TransactionMapper.class);
 
         TransactionController controller =
                 new TransactionController(
                         createTransactionUseCase,
                         getTransactionsByAccountUseCase,
                         transferMoneyUseCase,
-                        transactionWebMapper
+                        transactionMapper
                 );
 
         TransferMoneyRequest request =
@@ -228,12 +238,12 @@ class TransactionControllerTest {
                 )
         );
 
-        when(transactionWebMapper.toResponse(
+        when(transactionMapper.toResponse(
                 debit,
                 "5312345678"
         )).thenReturn(debitResponse);
 
-        when(transactionWebMapper.toResponse(
+        when(transactionMapper.toResponse(
                 credit,
                 "3312345678"
         )).thenReturn(creditResponse);
@@ -267,12 +277,12 @@ class TransactionControllerTest {
                 new BigDecimal("30000")
         );
 
-        verify(transactionWebMapper).toResponse(
+        verify(transactionMapper).toResponse(
                 debit,
                 "5312345678"
         );
 
-        verify(transactionWebMapper).toResponse(
+        verify(transactionMapper).toResponse(
                 credit,
                 "3312345678"
         );

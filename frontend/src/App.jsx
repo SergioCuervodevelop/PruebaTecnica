@@ -21,6 +21,9 @@ function App() {
 
   const [apiOnline, setApiOnline] = useState(false);
 
+  const [refreshClients, setRefreshClients] =
+    useState(0);
+
   const loadSummary = async () => {
     try {
       const data = await getClientSummary();
@@ -28,9 +31,21 @@ function App() {
       setSummary(data);
       setApiOnline(true);
     } catch (error) {
-      console.error("Error conectando con la API:", error);
+      console.error(
+        "Error conectando con la API:",
+        error
+      );
+
       setApiOnline(false);
     }
+  };
+
+  const handleClientCreated = async () => {
+    await loadSummary();
+
+    setRefreshClients(
+      (previousValue) => previousValue + 1
+    );
   };
 
   useEffect(() => {
@@ -50,29 +65,53 @@ function App() {
 
         <nav className="navigation">
           <button
-            className={section === "home" ? "active" : ""}
-            onClick={() => setSection("home")}
+            className={
+              section === "home"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setSection("home")
+            }
           >
             Inicio
           </button>
 
           <button
-            className={section === "clients" ? "active" : ""}
-            onClick={() => setSection("clients")}
+            className={
+              section === "clients"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setSection("clients")
+            }
           >
             Clientes
           </button>
 
           <button
-            className={section === "accounts" ? "active" : ""}
-            onClick={() => setSection("accounts")}
+            className={
+              section === "accounts"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setSection("accounts")
+            }
           >
             Cuentas
           </button>
 
           <button
-            className={section === "transactions" ? "active" : ""}
-            onClick={() => setSection("transactions")}
+            className={
+              section === "transactions"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setSection("transactions")
+            }
           >
             Transacciones
           </button>
@@ -83,7 +122,9 @@ function App() {
         {section === "home" && (
           <>
             <div className="page-header">
-              <h1>Panel principal</h1>
+              <h1>
+                Panel principal
+              </h1>
 
               <p>
                 Resumen general del sistema financiero.
@@ -118,16 +159,22 @@ function App() {
 
                 <div
                   className={`card-value api-status ${
-                    apiOnline ? "online" : "offline"
+                    apiOnline
+                      ? "online"
+                      : "offline"
                   }`}
                 >
-                  {apiOnline ? "Online" : "Offline"}
+                  {apiOnline
+                    ? "Online"
+                    : "Offline"}
                 </div>
               </div>
             </div>
 
             <div className="panel">
-              <h2>BankAPI</h2>
+              <h2>
+                BankAPI
+              </h2>
 
               <p>
                 Desde este panel puedes administrar clientes,
@@ -140,7 +187,9 @@ function App() {
         {section === "clients" && (
           <>
             <div className="page-header">
-              <h1>Clientes</h1>
+              <h1>
+                Clientes
+              </h1>
 
               <p>
                 Registra, consulta, modifica y elimina clientes.
@@ -148,11 +197,19 @@ function App() {
             </div>
 
             <div className="panel">
-              <ClientForm onClientCreated={loadSummary} />
+              <ClientForm
+                onClientCreated={
+                  handleClientCreated
+                }
+              />
             </div>
 
             <div className="panel">
-              <ClientSearch />
+              <ClientSearch
+                refreshClients={
+                  refreshClients
+                }
+              />
             </div>
           </>
         )}
@@ -160,7 +217,9 @@ function App() {
         {section === "accounts" && (
           <>
             <div className="page-header">
-              <h1>Cuentas</h1>
+              <h1>
+                Cuentas
+              </h1>
 
               <p>
                 Crea y administra los productos financieros
@@ -169,7 +228,11 @@ function App() {
             </div>
 
             <div className="panel">
-              <AccountForm onAccountCreated={loadSummary} />
+              <AccountForm
+                onAccountCreated={
+                  loadSummary
+                }
+              />
             </div>
 
             <div className="panel">
@@ -181,7 +244,9 @@ function App() {
         {section === "transactions" && (
           <>
             <div className="page-header">
-              <h1>Transacciones</h1>
+              <h1>
+                Transacciones
+              </h1>
 
               <p>
                 Realiza depósitos, retiros y transferencias

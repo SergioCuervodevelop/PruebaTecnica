@@ -1,5 +1,6 @@
 package com.cuervo.domain.model;
 
+import com.cuervo.domain.enums.ClientStatus;
 import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.exception.InvalidClientException;
 
@@ -16,6 +17,7 @@ public class Client {
     private String lastName;
     private String email;
     private LocalDate birthDate;
+    private ClientStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -39,6 +41,7 @@ public class Client {
         this.lastName = lastName;
         this.email = email;
         this.birthDate = birthDate;
+        this.status = ClientStatus.ACTIVE;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -74,9 +77,39 @@ public class Client {
             String lastName,
             String email) {
 
+        if (status == ClientStatus.DELETED) {
+            throw new InvalidClientException(
+                    "A deleted client cannot be updated"
+            );
+        }
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void delete() {
+
+        if (status == ClientStatus.DELETED) {
+            throw new InvalidClientException(
+                    "The client is already deleted"
+            );
+        }
+
+        this.status = ClientStatus.DELETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+
+        if (status != ClientStatus.DELETED) {
+            throw new InvalidClientException(
+                    "Only a deleted client can be restored"
+            );
+        }
+
+        this.status = ClientStatus.ACTIVE;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -134,6 +167,14 @@ public class Client {
 
     public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public ClientStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ClientStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {

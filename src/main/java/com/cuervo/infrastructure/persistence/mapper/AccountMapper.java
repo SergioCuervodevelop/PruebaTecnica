@@ -3,6 +3,7 @@ package com.cuervo.infrastructure.persistence.mapper;
 import com.cuervo.domain.model.Account;
 import com.cuervo.infrastructure.persistence.entity.AccountEntity;
 import com.cuervo.infrastructure.persistence.entity.ClientEntity;
+import com.cuervo.infrastructure.web.dtoaccount.AccountResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -62,5 +63,23 @@ public class AccountMapper {
         account.setUpdatedAt(entity.getUpdatedAt());
 
         return account;
+    }
+
+    public AccountResponse toResponse(Account account) {
+
+        if (account == null) {
+            return null;
+        }
+
+        return new AccountResponse(
+                account.getAccountType(),
+                account.getAccountNumber(),
+                account.getStatus(),
+                account.getBalance(),
+                account.getAvailableBalance(),
+                account.getGmfExempt(),
+                account.getCreatedAt(),
+                account.getUpdatedAt()
+        );
     }
 }

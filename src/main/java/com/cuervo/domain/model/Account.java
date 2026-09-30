@@ -21,9 +21,9 @@ public class Account {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long clientId;
- //Constructor
-    public Account(
 
+    // Constructor
+    public Account(
             AccountType accountType,
             String accountNumber,
             Long clientId
@@ -41,7 +41,7 @@ public class Account {
         this.updatedAt = LocalDateTime.now();
     }
 
-    //Type of account
+    // Deposit
     public void deposit(BigDecimal amount) {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -61,6 +61,7 @@ public class Account {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // Withdrawal
     public void withdraw(BigDecimal amount) {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -85,30 +86,32 @@ public class Account {
         this.availableBalance = this.availableBalance.subtract(amount);
         this.updatedAt = LocalDateTime.now();
     }
-  //Status of Account
-  public void cancel() {
 
-      if (status == AccountStatus.CANCELLED) {
-          throw new InvalidAccountStateException(
-                  "The account is already cancelled"
-          );
-      }
+    // Cancel account
+    public void cancel() {
 
-      if (balance.compareTo(BigDecimal.ZERO) > 0) {
-          throw new InvalidAccountStateException(
-                  "The account cannot be cancelled because it has a balance"
-          );
-      }
+        if (status == AccountStatus.CANCELLED) {
+            throw new InvalidAccountStateException(
+                    "The account is already cancelled"
+            );
+        }
 
-      this.status = AccountStatus.CANCELLED;
-      this.updatedAt = LocalDateTime.now();
-  }
+        if (balance.compareTo(BigDecimal.ZERO) > 0) {
+            throw new InvalidAccountStateException(
+                    "The account cannot be cancelled because it has a balance"
+            );
+        }
 
+        this.status = AccountStatus.CANCELLED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Activate inactive account
     public void activate() {
 
         if (status == AccountStatus.CANCELLED) {
             throw new InvalidAccountStateException(
-                    "A cancelled account cannot be activated"
+                    "A cancelled account cannot be activated. Use restore instead"
             );
         }
 
@@ -116,6 +119,20 @@ public class Account {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // Restore cancelled account
+    public void restore() {
+
+        if (status != AccountStatus.CANCELLED) {
+            throw new InvalidAccountStateException(
+                    "Only a cancelled account can be restored"
+            );
+        }
+
+        this.status = AccountStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Deactivate account
     public void deactivate() {
 
         if (status == AccountStatus.CANCELLED) {
@@ -128,7 +145,7 @@ public class Account {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters y Setters
+    // Getters and Setters
 
     public Long getId() {
         return id;

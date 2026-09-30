@@ -1,5 +1,6 @@
 package com.cuervo.infrastructure.web.dtoclient;
 
+import com.cuervo.domain.enums.ClientStatus;
 import com.cuervo.domain.enums.IdentificationType;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ public record ClientResponse(
         String lastName,
         String email,
         LocalDate birthDate,
+        ClientStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 

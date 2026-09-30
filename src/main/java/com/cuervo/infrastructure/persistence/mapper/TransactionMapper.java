@@ -3,11 +3,13 @@ package com.cuervo.infrastructure.persistence.mapper;
 import com.cuervo.domain.model.Transaction;
 import com.cuervo.infrastructure.persistence.entity.AccountEntity;
 import com.cuervo.infrastructure.persistence.entity.TransactionEntity;
+import com.cuervo.infrastructure.web.dtotransaction.TransactionResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TransactionMapper {
 
+    // DOMAIN -> ENTITY
     public TransactionEntity toEntity(Transaction transaction) {
 
         if (transaction == null) {
@@ -32,6 +34,7 @@ public class TransactionMapper {
         return entity;
     }
 
+    // ENTITY -> DOMAIN
     public Transaction toDomain(TransactionEntity entity) {
 
         if (entity == null) {
@@ -54,5 +57,24 @@ public class TransactionMapper {
         transaction.setTransactionDate(entity.getTransactionDate());
 
         return transaction;
+    }
+
+    // DOMAIN -> RESPONSE
+    public TransactionResponse toResponse(
+            Transaction transaction,
+            String accountNumber) {
+
+        if (transaction == null) {
+            return null;
+        }
+
+        return new TransactionResponse(
+                transaction.getTransactionType(),
+                transaction.getMovementType(),
+                transaction.getAmount(),
+                transaction.getTransactionDate(),
+                accountNumber,
+                transaction.getTransferId()
+        );
     }
 }

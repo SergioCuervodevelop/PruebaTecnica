@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanConfiguration {
 
-
     @Bean
     public CreateClientUseCase createClientUseCase(
             ClientRepositoryPort clientRepositoryPort) {
@@ -60,6 +59,15 @@ public class BeanConfiguration {
     }
 
     @Bean
+    public RestoreClientUseCase restoreClientUseCase(
+            ClientRepositoryPort clientRepositoryPort) {
+
+        return new RestoreClientService(
+                clientRepositoryPort
+        );
+    }
+
+    @Bean
     public GetClientSummaryUseCase getClientSummaryUseCase(
             ClientRepositoryPort clientRepositoryPort,
             AccountRepositoryPort accountRepositoryPort) {
@@ -69,8 +77,6 @@ public class BeanConfiguration {
                 accountRepositoryPort
         );
     }
-
-
 
     @Bean
     public CreateAccountUseCase createAccountUseCase(
@@ -119,6 +125,15 @@ public class BeanConfiguration {
             AccountRepositoryPort accountRepositoryPort) {
 
         return new CancelAccountService(
+                accountRepositoryPort
+        );
+    }
+
+    @Bean
+    public RestoreAccountUseCase restoreAccountUseCase(
+            AccountRepositoryPort accountRepositoryPort) {
+
+        return new RestoreAccountService(
                 accountRepositoryPort
         );
     }

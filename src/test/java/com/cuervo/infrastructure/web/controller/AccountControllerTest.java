@@ -5,13 +5,14 @@ import com.cuervo.application.port.in.account.ChangeAccountStatusUseCase;
 import com.cuervo.application.port.in.account.CreateAccountUseCase;
 import com.cuervo.application.port.in.account.GetAccountUseCase;
 import com.cuervo.application.port.in.account.GetAccountsByClientUseCase;
+import com.cuervo.application.port.in.account.RestoreAccountUseCase;
 import com.cuervo.domain.enums.AccountStatus;
 import com.cuervo.domain.enums.AccountType;
 import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.model.Account;
+import com.cuervo.infrastructure.persistence.mapper.AccountMapper;
 import com.cuervo.infrastructure.web.dtoaccount.AccountResponse;
 import com.cuervo.infrastructure.web.dtoaccount.CreateAccountRequest;
-import com.cuervo.infrastructure.web.mapper.AccountWebMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
@@ -40,8 +41,11 @@ class AccountControllerTest {
         CancelAccountUseCase cancelAccountUseCase =
                 mock(CancelAccountUseCase.class);
 
-        AccountWebMapper accountWebMapper =
-                mock(AccountWebMapper.class);
+        RestoreAccountUseCase restoreAccountUseCase =
+                mock(RestoreAccountUseCase.class);
+
+        AccountMapper accountMapper =
+                mock(AccountMapper.class);
 
         AccountController controller =
                 new AccountController(
@@ -50,7 +54,8 @@ class AccountControllerTest {
                         getAccountsByClientUseCase,
                         changeAccountStatusUseCase,
                         cancelAccountUseCase,
-                        accountWebMapper
+                        restoreAccountUseCase,
+                        accountMapper
                 );
 
         CreateAccountRequest request =
@@ -77,7 +82,7 @@ class AccountControllerTest {
                 "1075000000"
         )).thenReturn(createdAccount);
 
-        when(accountWebMapper
+        when(accountMapper
                 .toResponse(createdAccount))
                 .thenReturn(response);
 
@@ -119,8 +124,11 @@ class AccountControllerTest {
         CancelAccountUseCase cancelAccountUseCase =
                 mock(CancelAccountUseCase.class);
 
-        AccountWebMapper accountWebMapper =
-                mock(AccountWebMapper.class);
+        RestoreAccountUseCase restoreAccountUseCase =
+                mock(RestoreAccountUseCase.class);
+
+        AccountMapper accountMapper =
+                mock(AccountMapper.class);
 
         AccountController controller =
                 new AccountController(
@@ -129,7 +137,8 @@ class AccountControllerTest {
                         getAccountsByClientUseCase,
                         changeAccountStatusUseCase,
                         cancelAccountUseCase,
-                        accountWebMapper
+                        restoreAccountUseCase,
+                        accountMapper
                 );
 
         Account account =
@@ -142,7 +151,7 @@ class AccountControllerTest {
                 .getByAccountNumber("5312345678"))
                 .thenReturn(account);
 
-        when(accountWebMapper.toResponse(account))
+        when(accountMapper.toResponse(account))
                 .thenReturn(response);
 
         ResponseEntity<AccountResponse> result =
@@ -184,8 +193,11 @@ class AccountControllerTest {
         CancelAccountUseCase cancelAccountUseCase =
                 mock(CancelAccountUseCase.class);
 
-        AccountWebMapper accountWebMapper =
-                mock(AccountWebMapper.class);
+        RestoreAccountUseCase restoreAccountUseCase =
+                mock(RestoreAccountUseCase.class);
+
+        AccountMapper accountMapper =
+                mock(AccountMapper.class);
 
         AccountController controller =
                 new AccountController(
@@ -194,7 +206,8 @@ class AccountControllerTest {
                         getAccountsByClientUseCase,
                         changeAccountStatusUseCase,
                         cancelAccountUseCase,
-                        accountWebMapper
+                        restoreAccountUseCase,
+                        accountMapper
                 );
 
         Account account =
@@ -208,7 +221,7 @@ class AccountControllerTest {
                 AccountStatus.INACTIVE
         )).thenReturn(account);
 
-        when(accountWebMapper
+        when(accountMapper
                 .toResponse(account))
                 .thenReturn(response);
 
@@ -253,8 +266,11 @@ class AccountControllerTest {
         CancelAccountUseCase cancelAccountUseCase =
                 mock(CancelAccountUseCase.class);
 
-        AccountWebMapper accountWebMapper =
-                mock(AccountWebMapper.class);
+        RestoreAccountUseCase restoreAccountUseCase =
+                mock(RestoreAccountUseCase.class);
+
+        AccountMapper accountMapper =
+                mock(AccountMapper.class);
 
         AccountController controller =
                 new AccountController(
@@ -263,7 +279,8 @@ class AccountControllerTest {
                         getAccountsByClientUseCase,
                         changeAccountStatusUseCase,
                         cancelAccountUseCase,
-                        accountWebMapper
+                        restoreAccountUseCase,
+                        accountMapper
                 );
 
         Account account1 =
@@ -290,11 +307,11 @@ class AccountControllerTest {
                         )
                 );
 
-        when(accountWebMapper
+        when(accountMapper
                 .toResponse(account1))
                 .thenReturn(response1);
 
-        when(accountWebMapper
+        when(accountMapper
                 .toResponse(account2))
                 .thenReturn(response2);
 
@@ -349,8 +366,11 @@ class AccountControllerTest {
         CancelAccountUseCase cancelAccountUseCase =
                 mock(CancelAccountUseCase.class);
 
-        AccountWebMapper accountWebMapper =
-                mock(AccountWebMapper.class);
+        RestoreAccountUseCase restoreAccountUseCase =
+                mock(RestoreAccountUseCase.class);
+
+        AccountMapper accountMapper =
+                mock(AccountMapper.class);
 
         AccountController controller =
                 new AccountController(
@@ -359,7 +379,8 @@ class AccountControllerTest {
                         getAccountsByClientUseCase,
                         changeAccountStatusUseCase,
                         cancelAccountUseCase,
-                        accountWebMapper
+                        restoreAccountUseCase,
+                        accountMapper
                 );
 
         Account account =
@@ -372,7 +393,7 @@ class AccountControllerTest {
                 .cancel("5312345678"))
                 .thenReturn(account);
 
-        when(accountWebMapper
+        when(accountMapper
                 .toResponse(account))
                 .thenReturn(response);
 
@@ -393,5 +414,76 @@ class AccountControllerTest {
 
         verify(cancelAccountUseCase)
                 .cancel("5312345678");
+    }
+
+    @Test
+    void shouldRestoreAccountSuccessfully() {
+
+        CreateAccountUseCase createAccountUseCase =
+                mock(CreateAccountUseCase.class);
+
+        GetAccountUseCase getAccountUseCase =
+                mock(GetAccountUseCase.class);
+
+        GetAccountsByClientUseCase getAccountsByClientUseCase =
+                mock(GetAccountsByClientUseCase.class);
+
+        ChangeAccountStatusUseCase changeAccountStatusUseCase =
+                mock(ChangeAccountStatusUseCase.class);
+
+        CancelAccountUseCase cancelAccountUseCase =
+                mock(CancelAccountUseCase.class);
+
+        RestoreAccountUseCase restoreAccountUseCase =
+                mock(RestoreAccountUseCase.class);
+
+        AccountMapper accountMapper =
+                mock(AccountMapper.class);
+
+        AccountController controller =
+                new AccountController(
+                        createAccountUseCase,
+                        getAccountUseCase,
+                        getAccountsByClientUseCase,
+                        changeAccountStatusUseCase,
+                        cancelAccountUseCase,
+                        restoreAccountUseCase,
+                        accountMapper
+                );
+
+        Account account =
+                mock(Account.class);
+
+        AccountResponse response =
+                mock(AccountResponse.class);
+
+        when(restoreAccountUseCase
+                .restore("5312345678"))
+                .thenReturn(account);
+
+        when(accountMapper
+                .toResponse(account))
+                .thenReturn(response);
+
+        ResponseEntity<AccountResponse> result =
+                controller.restoreAccount(
+                        "5312345678"
+                );
+
+        assertEquals(
+                200,
+                result.getStatusCode().value()
+        );
+
+        assertEquals(
+                response,
+                result.getBody()
+        );
+
+        verify(restoreAccountUseCase)
+                .restore("5312345678");
+
+        verify(accountMapper)
+                .toResponse(account);
     }
 }

@@ -1,5 +1,6 @@
 package com.cuervo.infrastructure.persistence.entity;
 
+import com.cuervo.domain.enums.ClientStatus;
 import com.cuervo.domain.enums.IdentificationType;
 import jakarta.persistence.*;
 
@@ -43,6 +44,10 @@ public class ClientEntity {
 
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ClientStatus status;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -106,6 +111,14 @@ public class ClientEntity {
 
     public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public ClientStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ClientStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {

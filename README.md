@@ -63,11 +63,13 @@ Algunos de los casos de uso implementados son:
 - CreateClientUseCase
 - UpdateClientUseCase
 - DeleteClientUseCase
+- RestoreClientUseCase
 - CreateAccountUseCase
 - GetAccountsByClientUseCase
 - CreateTransactionUseCase
 - TransferMoneyUseCase
 - CancelAccountUseCase
+- RestoreAccountUseCase
 
 También se encuentran los puertos utilizados para comunicarse con infraestructura, por ejemplo:
 
@@ -127,13 +129,23 @@ Se pueden realizar las siguientes operaciones:
 - Crear clientes.
 - Consultar clientes.
 - Actualizar información.
-- Eliminar clientes.
+- Eliminar clientes de forma lógica.
+- Restaurar clientes eliminados.
 - Consultar un resumen de clientes y cuentas.
 - Consultar las cuentas asociadas a un cliente.
 
 Al crear un cliente se valida que sea mayor de edad.
 
-También se evita eliminar un cliente cuando tiene cuentas asociadas.
+Los clientes manejan los siguientes estados:
+
+- `ACTIVE`
+- `DELETED`
+
+La eliminación de clientes es lógica. Al eliminar un cliente su registro permanece en la base de datos y su estado cambia de `ACTIVE` a `DELETED`.
+
+Un cliente eliminado puede restaurarse posteriormente, cambiando nuevamente su estado a `ACTIVE`.
+
+También se evita eliminar un cliente cuando tiene cuentas asociadas y no se permite crear nuevas cuentas para un cliente con estado `DELETED`.
 
 Se realizan validaciones básicas como:
 
@@ -183,6 +195,10 @@ Las cuentas de ahorro se crean activas por defecto.
 
 Una cuenta solamente puede cancelarse cuando su saldo es cero.
 
+La cancelación es lógica: la cuenta permanece almacenada con estado `CANCELLED`.
+
+Una cuenta cancelada puede restaurarse explícitamente y volver al estado `ACTIVE`.
+
 Las operaciones financieras solo pueden realizarse sobre cuentas que se encuentren activas.
 
 ## Transacciones
@@ -222,16 +238,20 @@ Desde el frontend se pueden realizar las principales operaciones del sistema:
 - Crear clientes.
 - Consultar clientes.
 - Editar clientes.
-- Eliminar clientes.
+- Eliminar clientes de forma lógica.
+- Restaurar clientes eliminados.
 - Consultar las cuentas de un cliente.
 - Crear cuentas.
 - Consultar cuentas.
 - Cambiar el estado de una cuenta.
 - Cancelar cuentas.
+- Restaurar cuentas canceladas.
 - Realizar depósitos.
 - Realizar retiros.
 - Realizar transferencias.
 - Consultar el historial de movimientos.
+
+Después de crear un cliente, la tabla de clientes se actualiza automáticamente sin necesidad de recargar manualmente la página.
 
 El frontend se encuentra en:
 
@@ -318,6 +338,58 @@ Si ocurre un error durante el proceso, Spring puede realizar rollback evitando g
 
 PostgreSQL proporciona las propiedades ACID necesarias para mantener la consistencia de la información.
 
+## Eliminación lógica y restauración
+
+### Clientes
+
+Los clientes no se eliminan físicamente de la base de datos.
+
+Al ejecutar:
+
+```text
+DELETE /api/clients/{identificationType}/{identificationNumber}
+```
+
+el estado cambia:
+
+```text
+ACTIVE -> DELETED
+```
+
+Para restaurarlo:
+
+```text
+PATCH /api/clients/{identificationType}/{identificationNumber}/restore
+```
+
+y el estado vuelve a:
+
+```text
+DELETED -> ACTIVE
+```
+
+### Cuentas
+
+La cancelación de una cuenta también conserva el registro.
+
+Al cancelar una cuenta con saldo igual a cero:
+
+```text
+ACTIVE -> CANCELLED
+```
+
+Para restaurarla:
+
+```text
+PATCH /api/accounts/{accountNumber}/restore
+```
+
+y su estado vuelve a:
+
+```text
+CANCELLED -> ACTIVE
+```
+
 ## Base de datos
 
 Se utiliza PostgreSQL.
@@ -336,9 +408,9 @@ database/
 └── dml.sql
 ```
 
-`ddl.sql` contiene la creación de las estructuras principales.
+`ddl.sql` contiene la creación de las estructuras principales, incluyendo las restricciones de estado para clientes y cuentas.
 
-`dml.sql` contiene ejemplos de inserción, modificación y consulta de información.
+`dml.sql` contiene ejemplos de inserción, modificación, consulta, eliminación lógica, restauración de clientes, cancelación/restauración de cuentas y movimientos financieros.
 
 ## Estructura general
 
@@ -375,6 +447,7 @@ POST   /api/clients
 GET    /api/clients/{identificationType}/{identificationNumber}
 PUT    /api/clients/{identificationType}/{identificationNumber}
 DELETE /api/clients/{identificationType}/{identificationNumber}
+PATCH  /api/clients/{identificationType}/{identificationNumber}/restore
 GET    /api/clients/summary
 ```
 
@@ -386,6 +459,7 @@ GET    /api/accounts/{accountNumber}
 GET    /api/accounts/client/{identificationType}/{identificationNumber}
 PATCH  /api/accounts/{accountNumber}/status?status=ACTIVE|INACTIVE
 DELETE /api/accounts/{accountNumber}
+PATCH  /api/accounts/{accountNumber}/restore
 ```
 
 Ejemplo para crear una cuenta:
@@ -408,6 +482,18 @@ Ejemplo para cambiar el estado de una cuenta:
 
 ```text
 PATCH /api/accounts/5312345678/status?status=INACTIVE
+```
+
+Ejemplo para restaurar un cliente eliminado:
+
+```text
+PATCH /api/clients/CC/1234567890/restore
+```
+
+Ejemplo para restaurar una cuenta cancelada:
+
+```text
+PATCH /api/accounts/5312345678/restore
 ```
 
 ### Transacciones
@@ -456,9 +542,11 @@ Entre las clases probadas se encuentran:
 
 - CreateClientService
 - DeleteClientService
+- RestoreClientService
 - CreateAccountService
 - CreateTransactionService
 - TransferMoneyService
+- RestoreAccountService
 - ClientController
 - AccountController
 - TransactionController

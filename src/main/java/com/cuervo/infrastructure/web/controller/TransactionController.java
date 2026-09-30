@@ -4,10 +4,10 @@ import com.cuervo.application.port.in.transaction.CreateTransactionUseCase;
 import com.cuervo.application.port.in.transaction.GetTransactionsByAccountUseCase;
 import com.cuervo.application.port.in.transaction.TransferMoneyUseCase;
 import com.cuervo.domain.model.Transaction;
+import com.cuervo.infrastructure.persistence.mapper.TransactionMapper;
 import com.cuervo.infrastructure.web.dtotransaction.CreateTransactionRequest;
 import com.cuervo.infrastructure.web.dtotransaction.TransactionResponse;
 import com.cuervo.infrastructure.web.dtotransaction.TransferMoneyRequest;
-import com.cuervo.infrastructure.web.mapper.TransactionWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +22,19 @@ public class TransactionController {
     private final CreateTransactionUseCase createTransactionUseCase;
     private final GetTransactionsByAccountUseCase getTransactionsByAccountUseCase;
     private final TransferMoneyUseCase transferMoneyUseCase;
-    private final TransactionWebMapper transactionWebMapper;
+    private final TransactionMapper transactionMapper;
 
     public TransactionController(
             CreateTransactionUseCase createTransactionUseCase,
             GetTransactionsByAccountUseCase getTransactionsByAccountUseCase,
             TransferMoneyUseCase transferMoneyUseCase,
-            TransactionWebMapper transactionWebMapper
+            TransactionMapper transactionMapper
     ) {
         this.createTransactionUseCase = createTransactionUseCase;
         this.getTransactionsByAccountUseCase =
                 getTransactionsByAccountUseCase;
         this.transferMoneyUseCase = transferMoneyUseCase;
-        this.transactionWebMapper = transactionWebMapper;
+        this.transactionMapper = transactionMapper;
     }
 
     @PostMapping
@@ -49,7 +49,7 @@ public class TransactionController {
                 );
 
         TransactionResponse response =
-                transactionWebMapper.toResponse(
+                transactionMapper.toResponse(
                         created,
                         request.accountNumber()
                 );
@@ -69,7 +69,7 @@ public class TransactionController {
                         .execute(accountNumber)
                         .stream()
                         .map(transaction ->
-                                transactionWebMapper.toResponse(
+                                transactionMapper.toResponse(
                                         transaction,
                                         accountNumber
                                 ))
@@ -90,13 +90,13 @@ public class TransactionController {
                 );
 
         TransactionResponse debitResponse =
-                transactionWebMapper.toResponse(
+                transactionMapper.toResponse(
                         transactions.get(0),
                         request.sourceAccountNumber()
                 );
 
         TransactionResponse creditResponse =
-                transactionWebMapper.toResponse(
+                transactionMapper.toResponse(
                         transactions.get(1),
                         request.destinationAccountNumber()
                 );

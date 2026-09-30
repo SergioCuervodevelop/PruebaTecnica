@@ -1,10 +1,13 @@
 package com.cuervo.application.service.client;
 
 import com.cuervo.domain.enums.IdentificationType;
+import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.exception.InvalidClientException;
 import com.cuervo.domain.model.Client;
 import com.cuervo.domain.port.out.AccountRepositoryPort;
 import com.cuervo.domain.port.out.ClientRepositoryPort;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -14,23 +17,28 @@ import static org.mockito.Mockito.*;
 
 class DeleteClientServiceTest {
 
-    @Test
-    void shouldRejectDeleteWhenClientHasAccounts() {
+    private ClientRepositoryPort clientRepositoryPort;
+    private AccountRepositoryPort accountRepositoryPort;
 
-        ClientRepositoryPort clientRepositoryPort =
+    private DeleteClientService deleteClientService;
+
+    @BeforeEach
+    void setUp() {
+        clientRepositoryPort =
                 mock(ClientRepositoryPort.class);
 
-        AccountRepositoryPort accountRepositoryPort =
+        accountRepositoryPort =
                 mock(AccountRepositoryPort.class);
 
-        DeleteClientService service =
+        deleteClientService =
                 new DeleteClientService(
                         clientRepositoryPort,
                         accountRepositoryPort
                 );
+    }
 
-        Client client =
-                mock(Client.class);
+    @Test
+    void shouldDeleteClientWhenClientHasNoAccounts() {
 
         IdentificationType identificationType =
                 IdentificationType.CC;
@@ -38,15 +46,62 @@ class DeleteClientServiceTest {
         String identificationNumber =
                 "1075234567";
 
+        Client client = mock(Client.class);
+
         when(
                 clientRepositoryPort
                         .findByIdentificationTypeAndIdentificationNumber(
                                 identificationType,
                                 identificationNumber
                         )
-        ).thenReturn(
-                Optional.of(client)
+        ).thenReturn(Optional.of(client));
+
+        when(client.getId())
+                .thenReturn(1L);
+
+        when(
+                accountRepositoryPort
+                        .existsByClientId(1L)
+        ).thenReturn(false);
+
+        deleteClientService.execute(
+                identificationType,
+                identificationNumber
         );
+
+        verify(client).delete();
+
+        verify(
+                clientRepositoryPort
+        ).save(client);
+
+        verify(
+                clientRepositoryPort,
+                never()
+        ).deleteByIdentificationTypeAndIdentificationNumber(
+                identificationType,
+                identificationNumber
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenClientHasAccounts() {
+
+        IdentificationType identificationType =
+                IdentificationType.CC;
+
+        String identificationNumber =
+                "1075234567";
+
+        Client client = mock(Client.class);
+
+        when(
+                clientRepositoryPort
+                        .findByIdentificationTypeAndIdentificationNumber(
+                                identificationType,
+                                identificationNumber
+                        )
+        ).thenReturn(Optional.of(client));
 
         when(client.getId())
                 .thenReturn(1L);
@@ -58,44 +113,39 @@ class DeleteClientServiceTest {
 
         assertThrows(
                 InvalidClientException.class,
-                () -> service.execute(
+                () -> deleteClientService.execute(
                         identificationType,
                         identificationNumber
                 )
         );
 
         verify(
+                client,
+                never()
+        ).delete();
+
+        verify(
+                clientRepositoryPort,
+                never()
+        ).save(any(Client.class));
+
+        verify(
                 clientRepositoryPort,
                 never()
         ).deleteByIdentificationTypeAndIdentificationNumber(
-                any(IdentificationType.class),
+                any(),
                 anyString()
         );
     }
 
     @Test
-    void shouldDeleteClientWhenClientHasNoAccounts() {
-
-        ClientRepositoryPort clientRepositoryPort =
-                mock(ClientRepositoryPort.class);
-
-        AccountRepositoryPort accountRepositoryPort =
-                mock(AccountRepositoryPort.class);
-
-        DeleteClientService service =
-                new DeleteClientService(
-                        clientRepositoryPort,
-                        accountRepositoryPort
-                );
-
-        Client client =
-                mock(Client.class);
+    void shouldThrowExceptionWhenClientDoesNotExist() {
 
         IdentificationType identificationType =
                 IdentificationType.CC;
 
         String identificationNumber =
-                "1075234567";
+                "9999999999";
 
         when(
                 clientRepositoryPort
@@ -103,28 +153,23 @@ class DeleteClientServiceTest {
                                 identificationType,
                                 identificationNumber
                         )
-        ).thenReturn(
-                Optional.of(client)
+        ).thenReturn(Optional.empty());
+
+        assertThrows(
+                EntityNotFoundException.class,
+                () -> deleteClientService.execute(
+                        identificationType,
+                        identificationNumber
+                )
         );
 
-        when(client.getId())
-                .thenReturn(1L);
-
-        when(
+        verifyNoInteractions(
                 accountRepositoryPort
-                        .existsByClientId(1L)
-        ).thenReturn(false);
-
-        service.execute(
-                identificationType,
-                identificationNumber
         );
 
         verify(
-                clientRepositoryPort
-        ).deleteByIdentificationTypeAndIdentificationNumber(
-                identificationType,
-                identificationNumber
-        );
+                clientRepositoryPort,
+                never()
+        ).save(any(Client.class));
     }
 }

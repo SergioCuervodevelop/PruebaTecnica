@@ -40,9 +40,11 @@ public class GetClientSummaryService implements GetClientSummaryUseCase {
                                             .size();
 
                             return new ClientAccountSummary(
+                                    client.getIdentificationType(),
                                     client.getIdentificationNumber(),
                                     client.getFirstName(),
                                     client.getLastName(),
+                                    client.getStatus(),
                                     accountCount
                             );
                         })

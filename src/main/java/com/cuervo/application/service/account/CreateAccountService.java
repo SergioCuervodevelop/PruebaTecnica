@@ -2,6 +2,7 @@ package com.cuervo.application.service.account;
 
 import com.cuervo.application.port.in.account.CreateAccountUseCase;
 import com.cuervo.domain.enums.AccountType;
+import com.cuervo.domain.enums.ClientStatus;
 import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.exception.InvalidAccountStateException;
@@ -50,6 +51,13 @@ public class CreateAccountService
                                         "Cliente no encontrado"
                                 )
                         );
+
+        if (client.getStatus() == ClientStatus.DELETED) {
+
+            throw new InvalidAccountStateException(
+                    "No se puede crear una cuenta para un cliente eliminado"
+            );
+        }
 
         if (accountRepositoryPort
                 .existsByClientIdAndAccountType(

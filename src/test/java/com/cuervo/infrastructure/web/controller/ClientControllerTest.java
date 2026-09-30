@@ -3,9 +3,9 @@ package com.cuervo.infrastructure.web.controller;
 import com.cuervo.application.port.in.client.*;
 import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.model.Client;
+import com.cuervo.infrastructure.persistence.mapper.ClientMapper;
 import com.cuervo.infrastructure.web.dtoclient.ClientResponse;
 import com.cuervo.infrastructure.web.dtoclient.CreateClientRequest;
-import com.cuervo.infrastructure.web.mapper.ClientWebMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
@@ -31,11 +31,14 @@ class ClientControllerTest {
         DeleteClientUseCase deleteClientUseCase =
                 mock(DeleteClientUseCase.class);
 
+        RestoreClientUseCase restoreClientUseCase =
+                mock(RestoreClientUseCase.class);
+
         GetClientSummaryUseCase getClientSummaryUseCase =
                 mock(GetClientSummaryUseCase.class);
 
-        ClientWebMapper clientWebMapper =
-                mock(ClientWebMapper.class);
+        ClientMapper clientMapper =
+                mock(ClientMapper.class);
 
         ClientController controller =
                 new ClientController(
@@ -43,8 +46,9 @@ class ClientControllerTest {
                         getClientUseCase,
                         updateClientUseCase,
                         deleteClientUseCase,
+                        restoreClientUseCase,
                         getClientSummaryUseCase,
-                        clientWebMapper
+                        clientMapper
                 );
 
         CreateClientRequest request =
@@ -59,13 +63,13 @@ class ClientControllerTest {
         ClientResponse response =
                 mock(ClientResponse.class);
 
-        when(clientWebMapper.toDomain(request))
+        when(clientMapper.toDomain(request))
                 .thenReturn(client);
 
         when(createClientUseCase.execute(client))
                 .thenReturn(createdClient);
 
-        when(clientWebMapper.toResponse(createdClient))
+        when(clientMapper.toResponse(createdClient))
                 .thenReturn(response);
 
         ResponseEntity<ClientResponse> result =
@@ -81,13 +85,13 @@ class ClientControllerTest {
                 result.getBody()
         );
 
-        verify(clientWebMapper)
+        verify(clientMapper)
                 .toDomain(request);
 
         verify(createClientUseCase)
                 .execute(client);
 
-        verify(clientWebMapper)
+        verify(clientMapper)
                 .toResponse(createdClient);
     }
 
@@ -106,11 +110,14 @@ class ClientControllerTest {
         DeleteClientUseCase deleteClientUseCase =
                 mock(DeleteClientUseCase.class);
 
+        RestoreClientUseCase restoreClientUseCase =
+                mock(RestoreClientUseCase.class);
+
         GetClientSummaryUseCase getClientSummaryUseCase =
                 mock(GetClientSummaryUseCase.class);
 
-        ClientWebMapper clientWebMapper =
-                mock(ClientWebMapper.class);
+        ClientMapper clientMapper =
+                mock(ClientMapper.class);
 
         ClientController controller =
                 new ClientController(
@@ -118,8 +125,9 @@ class ClientControllerTest {
                         getClientUseCase,
                         updateClientUseCase,
                         deleteClientUseCase,
+                        restoreClientUseCase,
                         getClientSummaryUseCase,
-                        clientWebMapper
+                        clientMapper
                 );
 
         Client client =
@@ -143,7 +151,7 @@ class ClientControllerTest {
                 Optional.of(client)
         );
 
-        when(clientWebMapper.toResponse(client))
+        when(clientMapper.toResponse(client))
                 .thenReturn(response);
 
         ResponseEntity<ClientResponse> result =
@@ -168,7 +176,91 @@ class ClientControllerTest {
                         identificationNumber
                 );
 
-        verify(clientWebMapper)
+        verify(clientMapper)
                 .toResponse(client);
+    }
+
+    @Test
+    void shouldRestoreClientSuccessfully() {
+
+        CreateClientUseCase createClientUseCase =
+                mock(CreateClientUseCase.class);
+
+        GetClientUseCase getClientUseCase =
+                mock(GetClientUseCase.class);
+
+        UpdateClientUseCase updateClientUseCase =
+                mock(UpdateClientUseCase.class);
+
+        DeleteClientUseCase deleteClientUseCase =
+                mock(DeleteClientUseCase.class);
+
+        RestoreClientUseCase restoreClientUseCase =
+                mock(RestoreClientUseCase.class);
+
+        GetClientSummaryUseCase getClientSummaryUseCase =
+                mock(GetClientSummaryUseCase.class);
+
+        ClientMapper clientMapper =
+                mock(ClientMapper.class);
+
+        ClientController controller =
+                new ClientController(
+                        createClientUseCase,
+                        getClientUseCase,
+                        updateClientUseCase,
+                        deleteClientUseCase,
+                        restoreClientUseCase,
+                        getClientSummaryUseCase,
+                        clientMapper
+                );
+
+        IdentificationType identificationType =
+                IdentificationType.CC;
+
+        String identificationNumber =
+                "1075000000";
+
+        Client restoredClient =
+                mock(Client.class);
+
+        ClientResponse response =
+                mock(ClientResponse.class);
+
+        when(
+                restoreClientUseCase.restore(
+                        identificationType,
+                        identificationNumber
+                )
+        ).thenReturn(restoredClient);
+
+        when(
+                clientMapper.toResponse(restoredClient)
+        ).thenReturn(response);
+
+        ResponseEntity<ClientResponse> result =
+                controller.restoreClient(
+                        identificationType,
+                        identificationNumber
+                );
+
+        assertEquals(
+                200,
+                result.getStatusCode().value()
+        );
+
+        assertEquals(
+                response,
+                result.getBody()
+        );
+
+        verify(restoreClientUseCase)
+                .restore(
+                        identificationType,
+                        identificationNumber
+                );
+
+        verify(clientMapper)
+                .toResponse(restoredClient);
     }
 }

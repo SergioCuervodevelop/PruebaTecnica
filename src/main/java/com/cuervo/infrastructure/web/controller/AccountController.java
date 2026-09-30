@@ -5,12 +5,13 @@ import com.cuervo.application.port.in.account.ChangeAccountStatusUseCase;
 import com.cuervo.application.port.in.account.CreateAccountUseCase;
 import com.cuervo.application.port.in.account.GetAccountUseCase;
 import com.cuervo.application.port.in.account.GetAccountsByClientUseCase;
+import com.cuervo.application.port.in.account.RestoreAccountUseCase;
 import com.cuervo.domain.enums.AccountStatus;
 import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.model.Account;
+import com.cuervo.infrastructure.persistence.mapper.AccountMapper;
 import com.cuervo.infrastructure.web.dtoaccount.AccountResponse;
 import com.cuervo.infrastructure.web.dtoaccount.CreateAccountRequest;
-import com.cuervo.infrastructure.web.mapper.AccountWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,8 @@ public class AccountController {
     private final GetAccountsByClientUseCase getAccountsByClientUseCase;
     private final ChangeAccountStatusUseCase changeAccountStatusUseCase;
     private final CancelAccountUseCase cancelAccountUseCase;
-    private final AccountWebMapper accountWebMapper;
+    private final RestoreAccountUseCase restoreAccountUseCase;
+    private final AccountMapper accountMapper;
 
     public AccountController(
             CreateAccountUseCase createAccountUseCase,
@@ -35,18 +37,16 @@ public class AccountController {
             GetAccountsByClientUseCase getAccountsByClientUseCase,
             ChangeAccountStatusUseCase changeAccountStatusUseCase,
             CancelAccountUseCase cancelAccountUseCase,
-            AccountWebMapper accountWebMapper) {
+            RestoreAccountUseCase restoreAccountUseCase,
+            AccountMapper accountMapper) {
 
         this.createAccountUseCase = createAccountUseCase;
         this.getAccountUseCase = getAccountUseCase;
-        this.getAccountsByClientUseCase =
-                getAccountsByClientUseCase;
-        this.changeAccountStatusUseCase =
-                changeAccountStatusUseCase;
-        this.cancelAccountUseCase =
-                cancelAccountUseCase;
-        this.accountWebMapper =
-                accountWebMapper;
+        this.getAccountsByClientUseCase = getAccountsByClientUseCase;
+        this.changeAccountStatusUseCase = changeAccountStatusUseCase;
+        this.cancelAccountUseCase = cancelAccountUseCase;
+        this.restoreAccountUseCase = restoreAccountUseCase;
+        this.accountMapper = accountMapper;
     }
 
     @PostMapping
@@ -61,9 +61,7 @@ public class AccountController {
                 );
 
         AccountResponse response =
-                accountWebMapper.toResponse(
-                        createdAccount
-                );
+                accountMapper.toResponse(createdAccount);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -75,27 +73,18 @@ public class AccountController {
             @PathVariable String accountNumber) {
 
         Account account =
-                getAccountUseCase
-                        .getByAccountNumber(
-                                accountNumber
-                        );
+                getAccountUseCase.getByAccountNumber(accountNumber);
 
         AccountResponse response =
-                accountWebMapper.toResponse(account);
+                accountMapper.toResponse(account);
 
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(
-            "/client/{identificationType}/{identificationNumber}"
-    )
-    public ResponseEntity<List<AccountResponse>>
-    getAccountsByClient(
-            @PathVariable
-            IdentificationType identificationType,
-
-            @PathVariable
-            String identificationNumber) {
+    @GetMapping("/client/{identificationType}/{identificationNumber}")
+    public ResponseEntity<List<AccountResponse>> getAccountsByClient(
+            @PathVariable IdentificationType identificationType,
+            @PathVariable String identificationNumber) {
 
         List<AccountResponse> response =
                 getAccountsByClientUseCase
@@ -104,7 +93,7 @@ public class AccountController {
                                 identificationNumber
                         )
                         .stream()
-                        .map(accountWebMapper::toResponse)
+                        .map(accountMapper::toResponse)
                         .toList();
 
         return ResponseEntity.ok(response);
@@ -116,16 +105,13 @@ public class AccountController {
             @RequestParam AccountStatus status) {
 
         Account account =
-                changeAccountStatusUseCase
-                        .change(
-                                accountNumber,
-                                status
-                        );
+                changeAccountStatusUseCase.change(
+                        accountNumber,
+                        status
+                );
 
         return ResponseEntity.ok(
-                accountWebMapper.toResponse(
-                        account
-                )
+                accountMapper.toResponse(account)
         );
     }
 
@@ -134,13 +120,22 @@ public class AccountController {
             @PathVariable String accountNumber) {
 
         Account account =
-                cancelAccountUseCase
-                        .cancel(accountNumber);
+                cancelAccountUseCase.cancel(accountNumber);
 
         return ResponseEntity.ok(
-                accountWebMapper.toResponse(
-                        account
-                )
+                accountMapper.toResponse(account)
+        );
+    }
+
+    @PatchMapping("/{accountNumber}/restore")
+    public ResponseEntity<AccountResponse> restoreAccount(
+            @PathVariable String accountNumber) {
+
+        Account account =
+                restoreAccountUseCase.restore(accountNumber);
+
+        return ResponseEntity.ok(
+                accountMapper.toResponse(account)
         );
     }
 }

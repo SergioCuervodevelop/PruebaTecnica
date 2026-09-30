@@ -4,11 +4,11 @@ import com.cuervo.application.port.in.client.*;
 import com.cuervo.domain.enums.IdentificationType;
 import com.cuervo.domain.exception.EntityNotFoundException;
 import com.cuervo.domain.model.Client;
+import com.cuervo.infrastructure.persistence.mapper.ClientMapper;
 import com.cuervo.infrastructure.web.dtoclient.ClientResponse;
 import com.cuervo.infrastructure.web.dtoclient.ClientSummaryResponse;
 import com.cuervo.infrastructure.web.dtoclient.CreateClientRequest;
 import com.cuervo.infrastructure.web.dtoclient.UpdateClientRequest;
-import com.cuervo.infrastructure.web.mapper.ClientWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,34 +22,26 @@ public class ClientController {
     private final GetClientUseCase getClientUseCase;
     private final UpdateClientUseCase updateClientUseCase;
     private final DeleteClientUseCase deleteClientUseCase;
+    private final RestoreClientUseCase restoreClientUseCase;
     private final GetClientSummaryUseCase getClientSummaryUseCase;
-    private final ClientWebMapper clientWebMapper;
+    private final ClientMapper clientMapper;
 
     public ClientController(
             CreateClientUseCase createClientUseCase,
             GetClientUseCase getClientUseCase,
             UpdateClientUseCase updateClientUseCase,
             DeleteClientUseCase deleteClientUseCase,
+            RestoreClientUseCase restoreClientUseCase,
             GetClientSummaryUseCase getClientSummaryUseCase,
-            ClientWebMapper clientWebMapper) {
+            ClientMapper clientMapper) {
 
-        this.createClientUseCase =
-                createClientUseCase;
-
-        this.getClientUseCase =
-                getClientUseCase;
-
-        this.updateClientUseCase =
-                updateClientUseCase;
-
-        this.deleteClientUseCase =
-                deleteClientUseCase;
-
-        this.getClientSummaryUseCase =
-                getClientSummaryUseCase;
-
-        this.clientWebMapper =
-                clientWebMapper;
+        this.createClientUseCase = createClientUseCase;
+        this.getClientUseCase = getClientUseCase;
+        this.updateClientUseCase = updateClientUseCase;
+        this.deleteClientUseCase = deleteClientUseCase;
+        this.restoreClientUseCase = restoreClientUseCase;
+        this.getClientSummaryUseCase = getClientSummaryUseCase;
+        this.clientMapper = clientMapper;
     }
 
     @PostMapping
@@ -57,32 +49,23 @@ public class ClientController {
             @Valid @RequestBody CreateClientRequest request) {
 
         Client client =
-                clientWebMapper.toDomain(request);
+                clientMapper.toDomain(request);
 
         Client createdClient =
-                createClientUseCase.execute(
-                        client
-                );
+                createClientUseCase.execute(client);
 
         ClientResponse response =
-                clientWebMapper.toResponse(
-                        createdClient
-                );
+                clientMapper.toResponse(createdClient);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
 
-    @GetMapping(
-            "/{identificationType}/{identificationNumber}"
-    )
+    @GetMapping("/{identificationType}/{identificationNumber}")
     public ResponseEntity<ClientResponse> getClient(
-            @PathVariable
-            IdentificationType identificationType,
-
-            @PathVariable
-            String identificationNumber) {
+            @PathVariable IdentificationType identificationType,
+            @PathVariable String identificationNumber) {
 
         Client client =
                 getClientUseCase
@@ -91,38 +74,25 @@ public class ClientController {
                                 identificationNumber
                         )
                         .orElseThrow(
-                                () ->
-                                        new EntityNotFoundException(
-                                                "Client not found"
-                                        )
+                                () -> new EntityNotFoundException(
+                                        "Client not found"
+                                )
                         );
 
         ClientResponse response =
-                clientWebMapper.toResponse(
-                        client
-                );
+                clientMapper.toResponse(client);
 
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping(
-            "/{identificationType}/{identificationNumber}"
-    )
+    @PutMapping("/{identificationType}/{identificationNumber}")
     public ResponseEntity<ClientResponse> updateClient(
-            @PathVariable
-            IdentificationType identificationType,
-
-            @PathVariable
-            String identificationNumber,
-
-            @Valid
-            @RequestBody
-            UpdateClientRequest request) {
+            @PathVariable IdentificationType identificationType,
+            @PathVariable String identificationNumber,
+            @Valid @RequestBody UpdateClientRequest request) {
 
         Client client =
-                clientWebMapper.toDomain(
-                        request
-                );
+                clientMapper.toDomain(request);
 
         Client updatedClient =
                 updateClientUseCase.execute(
@@ -132,22 +102,15 @@ public class ClientController {
                 );
 
         ClientResponse response =
-                clientWebMapper.toResponse(
-                        updatedClient
-                );
+                clientMapper.toResponse(updatedClient);
 
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping(
-            "/{identificationType}/{identificationNumber}"
-    )
+    @DeleteMapping("/{identificationType}/{identificationNumber}")
     public ResponseEntity<Void> deleteClient(
-            @PathVariable
-            IdentificationType identificationType,
-
-            @PathVariable
-            String identificationNumber) {
+            @PathVariable IdentificationType identificationType,
+            @PathVariable String identificationNumber) {
 
         deleteClientUseCase.execute(
                 identificationType,
@@ -159,9 +122,25 @@ public class ClientController {
                 .build();
     }
 
+    @PatchMapping("/{identificationType}/{identificationNumber}/restore")
+    public ResponseEntity<ClientResponse> restoreClient(
+            @PathVariable IdentificationType identificationType,
+            @PathVariable String identificationNumber) {
+
+        Client restoredClient =
+                restoreClientUseCase.restore(
+                        identificationType,
+                        identificationNumber
+                );
+
+        ClientResponse response =
+                clientMapper.toResponse(restoredClient);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/summary")
-    public ResponseEntity<ClientSummaryResponse>
-    getSummary() {
+    public ResponseEntity<ClientSummaryResponse> getSummary() {
 
         ClientSummaryResponse response =
                 getClientSummaryUseCase.execute();
